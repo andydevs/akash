@@ -34,7 +34,6 @@ void handle_exit(char* cmdline) {
 	}
 	if (!strcmp(cmdline, "exit")) {
 		printf("Exiting...\n");
-		free(cmdline);
 		exit(EXIT_SUCCESS);
 	}
 }
