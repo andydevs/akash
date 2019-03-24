@@ -12,8 +12,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <readline/readline.h>
+#include "parse.h"
 
-void print_head(void) {
+/**
+ * Print banner of shell
+ */
+void print_banner(void) {
 	printf("\n");
 	printf("||                                             ||\n");
 	printf("||           ^    |  /    ^    /-- |           ||\n");
@@ -27,6 +31,12 @@ void print_head(void) {
 	printf("\n");
 }
 
+/**
+ * Handle exit status of command line.
+ * Exits if command line is exit.
+ *
+ * @param cmdline command line to check for exit status
+ */
 void handle_exit(char* cmdline) {
 	if (!cmdline) {
 		printf("Exiting...\n");
@@ -38,10 +48,27 @@ void handle_exit(char* cmdline) {
 	}
 }
 
-void handle_command(char* cmdline) {
-	printf("You typed in command: %s\n", cmdline);
+/**
+ * Execute parsed command represented by parse
+ * 
+ * @param parse struct representing parsed command
+ */
+void execute_parsed_command(struct parse* parse) {
+	printf("Command: %s\n", parse->cmd);
 }
 
+/**
+ * Parse and execute command line
+ *
+ * @param cmdline command line string to execute 
+ */
+void handle_command(char* cmdline) {
+	struct parse* parse = parse_command_input(cmdline);
+	if (parse->valid) {
+		execute_parsed_command(parse);
+	}
+	parse_destroy(&parse);	
+}
 
 /**
  * Program entry point
@@ -52,7 +79,7 @@ void handle_command(char* cmdline) {
  * @return exit status
  */
 int main(int argc, const char** argv) {
-	print_head();
+	print_banner();
 	char *cmdline;
 	while(1) {
 		cmdline = readline("$ ");
