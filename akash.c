@@ -8,7 +8,10 @@
  * Author:  Anshul Kharbanda
  * Created: 3 - 24 - 2019
  */
+#include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <readline/readline.h>
 
 void print_head(void) {
 	printf("\n");
@@ -24,6 +27,22 @@ void print_head(void) {
 	printf("\n");
 }
 
+void handle_exit(char* cmdline) {
+	if (!cmdline) {
+		printf("Exiting...\n");
+		exit(EXIT_SUCCESS);
+	}
+	if (!strcmp(cmdline, "exit")) {
+		printf("Exiting...\n");
+		free(cmdline);
+		exit(EXIT_SUCCESS);
+	}
+}
+
+void handle_command(char* cmdline) {
+	printf("You typed in command: %s\n", cmdline);
+}
+
 
 /**
  * Program entry point
@@ -35,5 +54,11 @@ void print_head(void) {
  */
 int main(int argc, const char** argv) {
 	print_head();
-	return 0;
+	char *cmdline;
+	while(1) {
+		cmdline = readline("$ ");
+		handle_exit(cmdline);	
+		handle_command(cmdline);
+		free(cmdline);
+	}
 }
