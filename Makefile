@@ -10,6 +10,9 @@ executable: $(TARGET)
 $(TARGET): $(OBJECTS)
 	gcc -o $@ $^ $(LIBDIRS) $(LIBS)
 
+run: $(TARGET)
+	./$(TARGET)
+
 clean:
 	rm -f $(TARGET)
 	rm -f $(OBJECTS)
