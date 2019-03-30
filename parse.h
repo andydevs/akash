@@ -14,6 +14,10 @@ struct parse {
 	char* cmd;
 };
 
+void parse_init();
+
+void parse_deinit();
+
 struct parse* parse_command_input(char* cmdline);
 
 void parse_destroy(struct parse** parse);

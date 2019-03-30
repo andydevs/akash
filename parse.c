@@ -24,6 +24,17 @@ void __debug_parse__printf(const char* fmt, ...) {
 	va_end(args);
 }
 
+const char* file_string = "[a-zA-Z0-9_\\.\\-\\~]+(/[a-zA-Z0-9_\\.\\-]+)?";
+regex_t file;
+
+void parse_init() {
+	regcomp(&file, file_string, REG_EXTENDED);
+}
+
+void parse_deinit() {
+	regfree(&file);
+}
+
 void print_parse_error(int error, regex_t* regex) {
 	size_t errbuf_size = regerror(error, regex, (char*)NULL, (size_t)0);
 	char* errbuf = (char*)malloc(errbuf_size*sizeof(char));
@@ -32,10 +43,6 @@ void print_parse_error(int error, regex_t* regex) {
 }
 
 int parse_command(struct parse* parse, char* cmdline, int index) {
-	// Compile regex
-	regex_t file;
-	regcomp(&file, "[a-zA-Z0-9_\\.\\-\\~]+(/[a-zA-Z0-9_\\.\\-]+)?", REG_EXTENDED);
-
 	// Find match in string at index
 	regmatch_t match[1];
 	int nindex;
@@ -57,9 +64,6 @@ int parse_command(struct parse* parse, char* cmdline, int index) {
 		nindex = match[0].rm_eo;
 	}
 
-	// Free regex
-	regfree(&file);	
-
 	// Return new index
 	return nindex;
 }
@@ -74,8 +78,8 @@ struct parse* parse_command_input(char* cmdline) {
 	
 	// Parse command
 	index = parse_command(parse, cmdline, index);
-	if (index < 0) {
-		// Exit invalid if index is less than 0
+	// Exit invalid if index is less than 0
+	if (index < 0) {	
 		parse->valid = 0;
 		__debug_parse__printf("Command line invalid\n");
 		__debug_parse__printf("=========================\n\n");

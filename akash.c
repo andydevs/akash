@@ -38,14 +38,11 @@ void print_banner(void) {
  * @param cmdline command line to check for exit status
  */
 void handle_exit(char* cmdline) {
-	if (!cmdline) {
+	if (!cmdline || !strcmp(cmdline, "exit")) {
 		printf("Exiting...\n");
+		parse_deinit();
 		exit(EXIT_SUCCESS);
-	}
-	if (!strcmp(cmdline, "exit")) {
-		printf("Exiting...\n");
-		exit(EXIT_SUCCESS);
-	}
+	}	
 }
 
 /**
@@ -79,6 +76,7 @@ void handle_command(char* cmdline) {
  * @return exit status
  */
 int main(int argc, const char** argv) {
+	parse_init();
 	print_banner();
 	char *cmdline;
 	while(1) {
