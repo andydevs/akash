@@ -143,3 +143,19 @@ Alright! Seems to work.
 
 I'm gonna hold off on reorganizing the parser so I can focus on adding more
 features. That could be a job for lex/yacc.
+
+---------------------------------------------------------------------------------
+
+The next thing I want to do is split cases for just not matching and actually
+having an error in the parse statements.
+
+---------------------------------------------------------------------------------
+
+You know what would work here... switch satements.
+
+---------------------------------------------------------------------------------
+
+It works.
+
+Why do I keep focusing on small bullshit? This is why I can't do anything 
+substantial.

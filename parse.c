@@ -30,6 +30,22 @@ void __debug_parse__printf(const char* fmt, ...) {
 	va_end(args);
 }
 
+#define PARSE_INVALID() \
+	parse->valid = 0; \
+	__debug_parse__printf("Command line invalid\n"); \
+	__debug_parse__printf("=========================\n\n"); \
+	return parse;
+
+
+#define PARSE_VALID() \
+	parse->valid = 1; \
+	__debug_parse__printf("Command line valid\n"); \
+	__debug_parse__printf("=========================\n\n"); \
+	return parse;
+
+#define PARSE_REQUIRE(parse_result) \
+	if (parse_result) { PARSE_INVALID() }	
+
 // Regex strings
 const char* file_string = "(\\w|[\\.-~])+(/(\\w|[\\.-])+)*";
 const char* arg_string = "\\S+";
@@ -80,19 +96,25 @@ int parse_cmd(struct parse* parse, char* cmdline, int* index) {
 	// Find match in string at index
 	regmatch_t match[1];
 	int error = regexec(&file, &cmdline[*index], 1, match, 0);
-	if (error) {
-		// Handle parse error
-		parse->cmd = NULL;
-		print_parse_error(error, &file);
-	}
-	else {
-		// Add command to parse
-		parse->cmd = strndup(&cmdline[*index + match[0].rm_so], match[0].rm_eo - match[0].rm_so);
-		__debug_parse__printf("Command: %s\n", parse->cmd);	
+	switch (error) {
+		case 0:
+			// Add command to parse
+			parse->cmd = strndup(&cmdline[*index + match[0].rm_so], match[0].rm_eo - match[0].rm_so);
+			__debug_parse__printf("Command: %s\n", parse->cmd);	
 		
-		// Add end offset to index
-		*index += match[0].rm_eo;
-	}
+			// Add end offset to index
+			*index += match[0].rm_eo;
+			break;
+		case REG_NOMATCH:
+			// Handle no parse
+			parse->arg = NULL;
+			break;
+		default:
+			// Handle parse error
+			parse->cmd = NULL;
+			print_parse_error(error, &file);
+			break;
+	}	
 	return error;
 }
 
@@ -109,18 +131,24 @@ int parse_arg(struct parse* parse, char* cmdline, int* index) {
 	// Find match in string at index
 	regmatch_t match[1];
 	int error = regexec(&arg, &cmdline[*index], 1, match, 0);
-	if (error) {
-		// Handle parse error
-		parse->arg = NULL;
-		print_parse_error(error, &arg);
-	}
-	else {
-		// Add argument to parse
-		parse->arg = strndup(&cmdline[*index + match[0].rm_so], match[0].rm_eo - match[0].rm_so);
-		__debug_parse__printf("Argument: %s\n", parse->arg);	
-		
-		// Add end offset to index
-		*index += match[0].rm_eo;
+	switch (error) {
+		case 0:
+			// Add argument to parse
+			parse->arg = strndup(&cmdline[*index + match[0].rm_so], match[0].rm_eo - match[0].rm_so);
+			__debug_parse__printf("Argument: %s\n", parse->arg);	
+			
+			// Add end offset to index
+			*index += match[0].rm_eo;
+			break;
+		case REG_NOMATCH:
+			// Handle no parse
+			parse->arg = NULL;
+			break;
+		default:
+			// Handle parse error
+			parse->arg = NULL;
+			print_parse_error(error, &arg);
+			break;
 	}
 	return error;
 }
@@ -140,31 +168,12 @@ struct parse* parse_command_input(char* cmdline) {
 	int index = 0;
 	struct parse* parse = (struct parse*)malloc(sizeof(struct parse));
 	
-	// Parse command
-	// Exit invalid if index is less than 0
-	if (parse_cmd(parse, cmdline, &index)) {
-		parse->valid = 0;
-		__debug_parse__printf("Command line invalid\n");
-		__debug_parse__printf("=========================\n\n");
-		return parse;
-	}
-	__debug_parse__printf("Remaining: %s\n", &cmdline[index]);
-
-	// Parse arg
-	// Exit invalid if index is less than 0
-	if (parse_arg(parse, cmdline, &index)) {	
-		parse->valid = 0;
-		__debug_parse__printf("Command line invalid\n");
-		__debug_parse__printf("=========================\n\n");
-		return parse;
-	}
-	__debug_parse__printf("Remaining: %s\n", &cmdline[index]);
+	// Parse component	
+	PARSE_REQUIRE(parse_cmd(parse, cmdline, &index))
+	PARSE_REQUIRE(parse_arg(parse, cmdline, &index))
 	
 	// Exit valid
-	parse->valid = 1;
-	__debug_parse__printf("Command line valid\n");
-	__debug_parse__printf("=========================\n\n");
-	return parse;
+	PARSE_VALID()	
 }
 
 void parse_destroy(struct parse** parse) {
