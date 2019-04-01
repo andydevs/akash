@@ -131,3 +131,15 @@ the entire time I was struggling with this.
 Story of my life 
 
 ---------------------------------------------------------------------------------
+
+So I'm gonna make a modification to how my system works. Instead of returning the
+new index, the function sets the index inside it. We pass the pointer of the index
+to the function and it is updated internally. What is returned is an int representing
+the match result.
+
+---------------------------------------------------------------------------------
+
+Alright! Seems to work.
+
+I'm gonna hold off on reorganizing the parser so I can focus on adding more
+features. That could be a job for lex/yacc.
