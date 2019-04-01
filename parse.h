@@ -12,6 +12,7 @@
 struct parse {
 	int valid;
 	char* cmd;
+	char* arg;
 };
 
 void parse_init();
