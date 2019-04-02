@@ -159,3 +159,12 @@ It works.
 
 Why do I keep focusing on small bullshit? This is why I can't do anything 
 substantial.
+
+---------------------------------------------------------------------------------
+
+Parsing multiple arguments works for the most part. Pipes are considered part of
+arguments. Have to fix that.
+
+---------------------------------------------------------------------------------
+
+...fixed

@@ -9,10 +9,15 @@
  * Created: 3 - 24 - 2019
  */
 
+struct arg_node {
+	char* text;
+	struct arg_node* next;
+};
+
 struct parse {
 	int valid;
 	char* cmd;
-	char* arg;
+	struct arg_node* args;
 };
 
 void parse_init();
