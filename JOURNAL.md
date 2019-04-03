@@ -168,3 +168,19 @@ arguments. Have to fix that.
 ---------------------------------------------------------------------------------
 
 ...fixed
+
+---------------------------------------------------------------------------------
+
+Okay... time to work on pipes finally...
+
+First things first, I need to implement the task struct using our current system.
+I'll have to move a lot of code into a `parse_task` function that handles task
+parsing
+
+What if I abstracted some of the code for each of these parts into...
+
+NO! NUNADAT! Features first!
+
+---------------------------------------------------------------------------------
+
+So the task struct is implemented, for one task.

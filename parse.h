@@ -14,10 +14,14 @@ struct arg_node {
 	struct arg_node* next;
 };
 
-struct parse {
-	int valid;
+struct task {
 	char* cmd;
 	struct arg_node* args;
+};
+
+struct parse {
+	int valid;
+	struct task* task;
 };
 
 void parse_init();
@@ -26,4 +30,4 @@ void parse_deinit();
 
 struct parse* parse_command_input(char* cmdline);
 
-void parse_destroy(struct parse** parse);
+void parse_destroy(struct parse* parse);

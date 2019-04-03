@@ -51,7 +51,8 @@ void handle_exit(char* cmdline) {
  * @param parse struct representing parsed command
  */
 void execute_parsed_command(struct parse* parse) {
-	printf("Command: %s\n", parse->cmd);
+	printf("Task:\n");
+	printf("	Command: %s\n", parse->task->cmd);
 }
 
 /**
@@ -64,7 +65,7 @@ void handle_command(char* cmdline) {
 	if (parse->valid) {
 		execute_parsed_command(parse);
 	}
-	parse_destroy(&parse);	
+	parse_destroy(parse);	
 }
 
 /**
