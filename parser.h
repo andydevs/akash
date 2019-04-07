@@ -8,11 +8,20 @@
  * Author:  Anshul Kharbanda
  * Created: 3 - 24 - 2019
  */
-#include "parser.h"
 
-void parse_init();
+struct arg_node {
+	char* text;
+	struct arg_node* next;
+};
 
-void parse_deinit();
+struct task {
+	char* cmd;
+	struct arg_node* args;
+};
 
-struct parse* parse_command_input(char* cmdline);
+struct parse {
+	int valid;
+	struct task* task;
+};
 
+void parse_destroy(struct parse* parse);

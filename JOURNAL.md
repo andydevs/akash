@@ -184,3 +184,10 @@ NO! NUNADAT! Features first!
 ---------------------------------------------------------------------------------
 
 So the task struct is implemented, for one task.
+
+---------------------------------------------------------------------------------
+
+I'm getting to this point where I don't want to do this anymore. Things are not
+really going anywhere and It's more getting in the way than actually contributing.
+
+I can take this on at any pace I like... It's okay.
