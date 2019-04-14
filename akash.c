@@ -52,7 +52,15 @@ void handle_exit(char* cmdline) {
  */
 void execute_parsed_command(struct parse* parse) {
 	printf("Task:\n");
-	printf("	Command: %s\n", parse->task->cmd);
+	printf("	Command: %s\n", parse->tasks->cmd);
+	if (parse->tasks->args) {
+		printf("	Arguments:\n");
+		struct arg_node* current = parse->tasks->args;
+		while (current) {
+			printf("		%s\n", current->arg);
+			current = current->next;
+		}
+	}
 }
 
 /**

@@ -12,6 +12,55 @@
 #include <stdlib.h>
 
 /**
+ * Create new task node
+ *
+ * @return new created task node
+ */
+struct task_node* task_new() {
+	struct task_node* task = NEW(struct task_node);
+	task->next = NULL;
+	return task;	
+}
+
+/**
+ * Add arg to task
+ *
+ * @parse task task struct
+ * @parse arg  argument string
+ */
+void parse_append_task(struct parse* parse, struct task_node* taskn) {
+	// Set tasks linked list to task 
+	// node if linked list has no nodes
+	if (parse->tasks == NULL) {
+		parse->tasks = taskn;
+	}
+	else {
+		// Else loop to the end of the list
+		// and append the node there
+		struct task_node* taski = parse->tasks;
+		while (taski->next) {
+			taski = taski->next;
+		}
+		taski->next = taskn;
+	}
+}
+
+/**
+ * Add arg to task
+ *
+ * @parse task task struct
+ * @parse arg  argument string
+ */
+void task_prepend_arg(struct task_node* task, char* arg) {
+	struct arg_node* argn = NEW(struct arg_node);
+	argn->arg  = arg;
+	argn->next = task->args;
+	task->args = argn;	
+}
+
+// ---------------------------- DESTROY ----------------------------
+
+/**
  * Destroy args linked list
  * 
  * @param args args linked list
@@ -31,7 +80,7 @@ void parse_args_destroy(struct arg_node* args) {
  * 
  * @param task task struct
  */
-void parse_task_destroy(struct task* task) {
+void parse_task_destroy(struct task_node* task) {
 	if (task->cmd) free(task->cmd);
 	if (task->args) parse_args_destroy(task->args);
 	free(task);
@@ -43,6 +92,6 @@ void parse_task_destroy(struct task* task) {
  * @param parse struct
  */
 void parse_destroy(struct parse* parse) {
-	if (parse->task) parse_task_destroy(parse->task);
+	if (parse->tasks) parse_task_destroy(parse->tasks);
 	free(parse);
 }

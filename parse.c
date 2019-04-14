@@ -8,6 +8,7 @@
  * Author:  Anshul Kharbanda
  * Created: 3 - 24 - 2019
  */
+#include "parser.h"
 #include "parse.h"
 #include <regex.h>
 #include <stdio.h>
@@ -30,7 +31,11 @@ void __debug_parse__printf(const char* fmt, ...) {
 	va_end(args);
 }
 
-#define NEW(type) (type*)malloc(sizeof(type))
+// -------------------- PARSE TEMPLATE MACROS ---------------------
+
+#define PARSE_HEADER() \
+	__debug_parse__printf("\n==========PARSE==========\n"); \
+	__debug_parse__printf("Entered: %s\n", cmdline);
 
 #define PARSE_INVALID() \
 	parse->valid = 0; \
@@ -59,6 +64,8 @@ void __debug_parse__printf(const char* fmt, ...) {
 	int result = part_result; \
 	if (!(result == 0 || result == REG_NOMATCH)) { return 1; }
 
+// ----------------------- SETTING UP PARSER ------------------------
+
 // Regex strings
 const char* file_string = "(\\w|[\\.-~])+(/(\\w|[\\.-])+)*";
 const char* arg_string = "[^ \t\\|]+";
@@ -83,6 +90,8 @@ void parse_deinit() {
 	regfree(&arg);
 }
 
+// ------------------------- PARSE HELPERS --------------------------
+
 /**
  * Print parser error for regex
  *
@@ -97,6 +106,23 @@ void print_parse_error(int error, regex_t* regex) {
 }
 
 /**
+ * Get match string from cmdline using match array
+ * 
+ * @param cmdline cmdline string
+ * @param index   index of match
+ * @param match   match offset buffer
+ *
+ * @return matched string
+ */
+char* get_match_string(char* cmdline, int* index, regmatch_t match[1]) {
+	return strndup(
+		&cmdline[*index + match[0].rm_so],
+		match[0].rm_eo - match[0].rm_so);
+}
+
+// -------------------------- PARSE NODES ---------------------------
+
+/**
  * Parse command
  *
  * @param task    task struct
@@ -105,16 +131,14 @@ void print_parse_error(int error, regex_t* regex) {
  *
  * @return regexec result (0 if match is successful)
  */
-int parse_cmd(struct task* task, char* cmdline, int* index) {
+int parse_cmd(struct task_node* task, char* cmdline, int* index) {
 	// Find match in string at index
 	regmatch_t match[1];
 	int error = regexec(&file, &cmdline[*index], 1, match, 0);
 	switch (error) {
 		case 0:
 			// Add command to parse
-			task->cmd = strndup(
-				&cmdline[*index + match[0].rm_so],
-				match[0].rm_eo - match[0].rm_so);
+			task->cmd = get_match_string(cmdline, index, match);
 			__debug_parse__printf("\tCommand: %s\n", task->cmd);	
 		
 			// Add end offset to index
@@ -129,7 +153,7 @@ int parse_cmd(struct task* task, char* cmdline, int* index) {
 			task->cmd = NULL;
 			print_parse_error(error, &file);
 			break;
-	}	
+	}
 	return error;
 }
 
@@ -142,21 +166,15 @@ int parse_cmd(struct task* task, char* cmdline, int* index) {
  *
  * @return regexec result (0 if match is successful)
  */
-int parse_arg(struct task* task, char* cmdline, int* index) {
+int parse_arg(struct task_node* task, char* cmdline, int* index) {
 	// Find match in string at index
 	regmatch_t match[1];
 	int error = regexec(&arg, &cmdline[*index], 1, match, 0);
 	switch (error) {
-		case 0:
-			;
+		case 0:	
 			// Add argument to parse
-			struct arg_node* argn = NEW(struct arg_node);
-			argn->text = strndup(
-				&cmdline[*index + match[0].rm_so],
-				match[0].rm_eo - match[0].rm_so);
-			argn->next = task->args;
-			task->args = argn;
-			__debug_parse__printf("\tArgument: %s\n", argn->text);	
+			task_prepend_arg(task, get_match_string(cmdline, index, match)); 
+			__debug_parse__printf("\tArgument: %s\n", task->args->arg);
 			
 			// Add end offset to index
 			*index += match[0].rm_eo;
@@ -180,7 +198,7 @@ int parse_arg(struct task* task, char* cmdline, int* index) {
  *
  * @return regexec result (0 if match is successful)
  */
-int parse_args(struct task* task, char* cmdline, int* index) {
+int parse_args(struct task_node* task, char* cmdline, int* index) {
 	task->args = NULL;
 	int last = 0;
 	while (last == 0) {
@@ -199,13 +217,15 @@ int parse_args(struct task* task, char* cmdline, int* index) {
  * @return parse result (0 if match is successful)
  */
 int parse_task(struct parse* parse, char* cmdline, int* index) {
-	struct task* task = NEW(struct task);
+	struct task_node* task = NEW(struct task_node);
 	__debug_parse__printf("Task:\n");
 	PART_REQUIRE(parse_cmd(task, cmdline, index))
 	PART_OPTIONAL(parse_args(task, cmdline, index))
-	parse->task = task;
+	parse->tasks = task;
 	return 0;
 }
+
+// --------------------- MAIN PARSE FUNCTION ----------------------
 
 /**
  * Parse command input into parse struct
@@ -215,8 +235,8 @@ int parse_task(struct parse* parse, char* cmdline, int* index) {
  * @return parse struct
  */
 struct parse* parse_command_input(char* cmdline) {
-	__debug_parse__printf("\n==========PARSE==========\n");
-	__debug_parse__printf("Entered: %s\n", cmdline);	
+	// Parse header entered
+	PARSE_HEADER()
 	
 	// Declare index int and allocate parse struct memory
 	int index = 0;
