@@ -29,6 +29,13 @@ struct parse {
 };
 
 /**
+ * Create new parse
+ *
+ * @return new created parse
+ */
+struct parse* parse_new();
+
+/**
  * Create new task node
  *
  * @return new created task node

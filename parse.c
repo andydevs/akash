@@ -69,10 +69,12 @@ void __debug_parse__printf(const char* fmt, ...) {
 // Regex strings
 const char* file_string = "(\\w|[\\.-~])+(/(\\w|[\\.-])+)*";
 const char* arg_string = "[^ \t\\|]+";
+const char* pipe_string = "\\|";
 
 // Regular Expressions
 regex_t file;
 regex_t arg;
+regex_t pipe;
 
 /**
  * Initialize parser
@@ -80,6 +82,7 @@ regex_t arg;
 void parse_init() {
 	regcomp(&file, file_string, REG_EXTENDED);
 	regcomp(&arg, arg_string, REG_EXTENDED);
+	regcomp(&pipe, pipe_string, REG_EXTENDED);
 }
 
 /**
@@ -88,6 +91,7 @@ void parse_init() {
 void parse_deinit() {
 	regfree(&file);
 	regfree(&arg);
+	regfree(&pipe);
 }
 
 // ------------------------- PARSE HELPERS --------------------------
@@ -190,6 +194,23 @@ int parse_arg(struct task_node* task, char* cmdline, int* index) {
 }
 
 /**
+ * Lookahead for pipe token
+ * True if next upcoming token is pipe and not arg
+ *
+ * @param cmdline command input line
+ * @param index   starting index of input to check (does not update)
+ *
+ * @return regexec result (0 if match is successful)
+ */
+int lookahead_pipe(char* cmdline, int* index) {
+	regmatch_t pipe_match[1];
+	regmatch_t arg_match[1];
+	int pipe_error = regexec(&pipe, &cmdline[*index], 1, pipe_match, 0);
+	int arg_error = regexec(&arg, &cmdline[*index], 1, arg_match, 0);
+	return pipe_error == 0 && (arg_error > 0 || pipe_match[0].rm_so < arg_match[0].rm_so);
+}
+
+/**
  * Parse all arguments
  *
  * @param task    task struct
@@ -201,7 +222,7 @@ int parse_arg(struct task_node* task, char* cmdline, int* index) {
 int parse_args(struct task_node* task, char* cmdline, int* index) {
 	task->args = NULL;
 	int last = 0;
-	while (last == 0) {
+	while (last == 0 && lookahead_pipe(cmdline, index) == 0) {
 		last = parse_arg(task, cmdline, index);
 	}
 	return last;
@@ -221,7 +242,7 @@ int parse_task(struct parse* parse, char* cmdline, int* index) {
 	__debug_parse__printf("Task:\n");
 	PART_REQUIRE(parse_cmd(task, cmdline, index))
 	PART_OPTIONAL(parse_args(task, cmdline, index))
-	parse->tasks = task;
+	parse_append_task(parse, task);
 	return 0;
 }
 
@@ -240,7 +261,7 @@ struct parse* parse_command_input(char* cmdline) {
 	
 	// Declare index int and allocate parse struct memory
 	int index = 0;
-	struct parse* parse = NEW(struct parse);
+	struct parse* parse = parse_new();
 	
 	// Parse component
 	PARSE_REQUIRE(parse_task(parse, cmdline, &index))	

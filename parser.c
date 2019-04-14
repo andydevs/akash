@@ -12,6 +12,17 @@
 #include <stdlib.h>
 
 /**
+ * Create new parse
+ *
+ * @return new created parse
+ */
+struct parse* parse_new() {
+	struct parse* parse = NEW(struct parse);
+	parse->tasks = NULL;
+	return parse;
+}
+
+/**
  * Create new task node
  *
  * @return new created task node
