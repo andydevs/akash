@@ -66,10 +66,10 @@ void __debug_parse__printf(const char* fmt, ...) {
 // ----------------------- SETTING UP PARSER ------------------------
 
 // Regex strings
-const char* file_string = "(\\w|[\\.-~])+(/(\\w|[\\.-])+)*";
-const char* arg_string = "[^ \t\\|<]+";
-const char* pipe_string = "\\|";
-const char* file_in_string = "<";
+const char* file_string = "^\\s*(\\w|[\\.-~])+(/(\\w|[\\.-])+)*";
+const char* arg_string = "^\\s*[^ \t\\|<]+";
+const char* pipe_string = "^\\s*\\|";
+const char* file_in_string = "^\\s*<";
 
 // Regular Expressions
 regex_t file;

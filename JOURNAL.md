@@ -214,3 +214,10 @@ Other than that, parsing multiple tasks works!. Now I just gotta do file IO.
 Since file IO can be done in the `parse_tasks` function, I'll rename that to
 `parse_command` or `parse_input` or something, since that's the main parse input
 system.
+
+---------------------------------------------------------------------------------
+
+What if I changed the regex tokens to match the immediate next string rather than
+anywhere in the string
+
+... surprising... that works for once...
