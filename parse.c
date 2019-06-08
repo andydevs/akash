@@ -258,11 +258,7 @@ int consume_file_in(char* cmdline, int* index) {
  * @return regexec result
  */
 int direct_lookahead_pipe(char* cmdline, int* index) {
-	regmatch_t pipe_match[1];
-	regmatch_t arg_match[1];
-	int pipe_error = regexec(&pipe, &cmdline[*index], 1, pipe_match, 0);
-	int arg_error = regexec(&arg, &cmdline[*index], 1, arg_match, 0);
-	return pipe_error == 0 && (arg_error > 0 || pipe_match[0].rm_so < arg_match[0].rm_so);
+	return regexec(&pipe, &cmdline[*index], 0, NULL, 0) == 0;
 }
 
 /**
@@ -275,11 +271,7 @@ int direct_lookahead_pipe(char* cmdline, int* index) {
  * @return regexec result
  */
 int direct_lookahead_file_in(char* cmdline, int* index) {	
-	regmatch_t file_in_match[1];
-	regmatch_t arg_match[1];
-	int file_in_error = regexec(&file_in, &cmdline[*index], 1, file_in_match, 0);
-	int arg_error = regexec(&arg, &cmdline[*index], 1, arg_match, 0);
-	return file_in_error == 0 && (arg_error > 0 || file_in_match[0].rm_so < arg_match[0].rm_so);
+	return regexec(&file_in, &cmdline[*index], 0, NULL, 0) == 0;
 }
 
 /**
