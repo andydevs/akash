@@ -51,6 +51,9 @@ void handle_exit(char* cmdline) {
  * @param parse struct representing parsed command
  */
 void execute_parsed_command(struct parse* parse) {
+	if (parse->infile) {
+		printf("Infile: %s\n", parse->infile);
+	}
 	if (parse->tasks) {
 		printf("Tasks:\n");
 		struct task_node* taskn;

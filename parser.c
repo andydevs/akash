@@ -19,7 +19,18 @@
 struct parse* parse_new() {
 	struct parse* parse = NEW(struct parse);
 	parse->tasks = NULL;
+	parse->infile = NULL;
 	return parse;
+}
+
+/**
+ * Set infile of parse
+ * 
+ * @param parse  parse struct
+ * @param infile infile
+ */
+void parse_set_infile(struct parse* parse, char* infile) {
+	parse->infile = infile;
 }
 
 /**
@@ -91,6 +102,7 @@ void parse_task_destroy(struct task_node* task) {
  * @param parse struct
  */
 void parse_destroy(struct parse* parse) {
+	if (parse->infile) free(parse->infile);
 	if (parse->tasks) parse_task_destroy(parse->tasks);
 	free(parse);
 }
