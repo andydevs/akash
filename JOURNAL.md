@@ -191,3 +191,20 @@ I'm getting to this point where I don't want to do this anymore. Things are not
 really going anywhere and It's more getting in the way than actually contributing.
 
 I can take this on at any pace I like... It's okay.
+
+---------------------------------------------------------------------------------
+
+WOW! It's been forever! But I'm back boi.
+
+Multiple tasks via pipe... that's what I gotta do
+
+I have the infrastructure for adding multiple pipes... Now I just gotta parse 
+pipes
+
+Looks like I have part of the pipe parsing implemented already! So I just had to
+add a couple more functions. However, I realized that `task_append_arg` was
+needlessly complicated. If I prepend each task, like with args, it makes the code
+a lot easier. I can reverse it later. So I replaced `task_append_arg` with
+`task_prepend_arg`
+
+Other than that, parsing multiple tasks works!. Now I just gotta do file IO.

@@ -194,20 +194,60 @@ int parse_arg(struct task_node* task, char* cmdline, int* index) {
 }
 
 /**
- * Lookahead for pipe token
+ * Direct lookahead for pipe token
  * True if next upcoming token is pipe and not arg
  *
  * @param cmdline command input line
  * @param index   starting index of input to check (does not update)
  *
- * @return regexec result (0 if match is successful)
+ * @return regexec result
  */
-int lookahead_pipe(char* cmdline, int* index) {
+int direct_lookahead_pipe(char* cmdline, int* index) {
 	regmatch_t pipe_match[1];
 	regmatch_t arg_match[1];
 	int pipe_error = regexec(&pipe, &cmdline[*index], 1, pipe_match, 0);
 	int arg_error = regexec(&arg, &cmdline[*index], 1, arg_match, 0);
 	return pipe_error == 0 && (arg_error > 0 || pipe_match[0].rm_so < arg_match[0].rm_so);
+}
+
+/**
+ * Lookahead for pipe token
+ * True if there are a pipe ahead
+ *
+ * @param cmdline command input line
+ * @param index   starting index of input to check (does not update)
+ *
+ * @return regexec result
+ */
+int lookahead_pipe(char* cmdline, int* index) {
+	int pipe_error = regexec(&pipe, &cmdline[*index], 0, NULL, 0);
+	return pipe_error == 0;
+}
+
+/**
+ * Consume pipe token
+ * True if there is a pipe token to consume
+ * 
+ * @param cmdline command input line
+ * @param index   starting index of input to check (updates)
+ *
+ * @return regexec result
+ */
+int consume_pipe(char* cmdline, int* index) {
+	regmatch_t match[1];
+	int error = regexec(&pipe, &cmdline[*index], 1, match, 0);
+	switch (error) {
+		case 0:		
+			// Add end offset to index
+			*index += match[0].rm_eo;
+			return 1;
+		case REG_NOMATCH:
+			return 0;
+		default:
+			// Handle parse error
+			print_parse_error(error, &pipe);
+			return 0;
+	}
 }
 
 /**
@@ -222,7 +262,7 @@ int lookahead_pipe(char* cmdline, int* index) {
 int parse_args(struct task_node* task, char* cmdline, int* index) {
 	task->args = NULL;
 	int last = 0;
-	while (last == 0 && lookahead_pipe(cmdline, index) == 0) {
+	while (!(last || direct_lookahead_pipe(cmdline, index))) {
 		last = parse_arg(task, cmdline, index);
 	}
 	return last;
@@ -242,7 +282,25 @@ int parse_task(struct parse* parse, char* cmdline, int* index) {
 	__debug_parse__printf("Task:\n");
 	PART_REQUIRE(parse_cmd(task, cmdline, index))
 	PART_OPTIONAL(parse_args(task, cmdline, index))
-	parse_append_task(parse, task);
+	parse_prepend_task(parse, task);
+	return 0;
+}
+
+/**
+ * Parse tasks
+ *
+ * @param parse   parse struct
+ * @param cmdline command input line
+ * @param index   starting index of input to check (updates)
+ *
+ * @return parse result (0 if match is successful)
+ */
+int parse_tasks(struct parse* parse, char* cmdline, int* index) {	
+	__debug_parse__printf("Tasks:\n");
+	PART_REQUIRE(parse_task(parse, cmdline, index));
+	while (consume_pipe(cmdline, index)) {
+		PART_OPTIONAL(parse_task(parse, cmdline, index));
+	}
 	return 0;
 }
 
@@ -264,7 +322,7 @@ struct parse* parse_command_input(char* cmdline) {
 	struct parse* parse = parse_new();
 	
 	// Parse component
-	PARSE_REQUIRE(parse_task(parse, cmdline, &index))	
+	PARSE_REQUIRE(parse_tasks(parse, cmdline, &index))	
 
 	// Exit valid
 	PARSE_VALID()

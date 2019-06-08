@@ -43,12 +43,12 @@ struct parse* parse_new();
 struct task_node* task_new();
  
 /**
- * Add arg to task
+ * Add task to parse
  *
- * @parse task task struct
- * @parse arg  argument string
+ * @parse parse parse struct
+ * @parse task  task struct
  */
-void parse_append_task(struct parse* parse, struct task_node* taskn);
+void parse_prepend_task(struct parse* parse, struct task_node* taskn);
 
 /**
  * Add arg to task

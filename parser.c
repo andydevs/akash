@@ -34,26 +34,14 @@ struct task_node* task_new() {
 }
 
 /**
- * Add arg to task
+ * Add task to parse
  *
- * @parse task task struct
- * @parse arg  argument string
+ * @parse parse parse struct
+ * @parse task  task struct
  */
-void parse_append_task(struct parse* parse, struct task_node* taskn) {
-	// Set tasks linked list to task 
-	// node if linked list has no nodes
-	if (parse->tasks == NULL) {
-		parse->tasks = taskn;
-	}
-	else {
-		// Else loop to the end of the list
-		// and append the node there
-		struct task_node* taski = parse->tasks;
-		while (taski->next) {
-			taski = taski->next;
-		}
-		taski->next = taskn;
-	}
+void parse_prepend_task(struct parse* parse, struct task_node* taskn) {
+	taskn->next = parse->tasks;
+	parse->tasks = taskn;
 }
 
 /**

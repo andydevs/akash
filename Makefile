@@ -2,7 +2,7 @@ TARGET=akash
 SOURCES=$(wildcard *.c)
 OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 LIBS=-lreadline
-FLAGS=-DDEBUG_PARSE
+FLAGS=-g -DDEBUG_PARSE
 
 executable: $(TARGET)
 
@@ -14,6 +14,9 @@ $(TARGET): $(OBJECTS)
 
 run: $(TARGET)
 	./$(TARGET)
+
+debug: $(TARGET)
+	gdb $(TARGET)
 
 clean:
 	rm -f $(TARGET)
