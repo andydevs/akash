@@ -122,9 +122,78 @@ void print_parse_error(int error, regex_t* regex) {
  * @return matched string
  */
 char* get_match_string(char* cmdline, int* index, regmatch_t match[1]) {
-	return strndup(
-		&cmdline[*index + match[0].rm_so],
-		match[0].rm_eo - match[0].rm_so);
+	int start = match[0].rm_so;
+	int end = match[0].rm_eo;
+	while (cmdline[*index + start] == ' ' || cmdline[*index + start] == '\t') {
+		start += 1;
+	}
+	return strndup(&cmdline[*index + start], end - start);
+}
+
+// -------------------------- TOKEN PARSE ---------------------------
+
+/**
+ * Consume pipe token
+ * True if there is a pipe token to consume
+ * 
+ * @param cmdline command input line
+ * @param index   starting index of input to check (updates)
+ *
+ * @return regexec result
+ */
+int consume_pipe(char* cmdline, int* index) {
+	regmatch_t match[1];
+	int error = regexec(&pipe, &cmdline[*index], 1, match, 0);
+	switch (error) {
+		case 0:		
+			// Add end offset to index
+			*index += match[0].rm_eo;
+			return 1;
+		case REG_NOMATCH:
+			return 0;
+		default:
+			// Handle parse error
+			print_parse_error(error, &pipe);
+			return 0;
+	}
+}
+
+/**
+ * Consume file_in token
+ * True if there is a file_in token consumed
+ *
+ * @param cmdline command input line
+ * @param index   starting index of input to check (updates)
+ *
+ * @return regexec result
+ */
+int consume_file_in(char* cmdline, int* index) {
+	regmatch_t match[1];
+	int error = regexec(&file_in, &cmdline[*index], 1, match, 0);
+	switch (error) {
+		case 0:		
+			// Add end offset to index
+			*index += match[0].rm_eo;
+			return 1;
+		case REG_NOMATCH:
+			return 0;
+		default:
+			// Handle parse error
+			print_parse_error(error, &pipe);
+			return 0;
+	}
+}
+
+/**
+ * Lookahead for arg token
+ *
+ * @param cmdline command input line
+ * @param index   starting index of input to check (does not update)
+ *
+ * @return regexec result
+ */
+int lookahead_arg(char* cmdline, int* index) {
+	return regexec(&arg, &cmdline[*index], 0, NULL, 0) == 0;
 }
 
 // -------------------------- PARSE NODES ---------------------------
@@ -197,84 +266,6 @@ int parse_arg(struct task_node* task, char* cmdline, int* index) {
 }
 
 /**
- * Consume pipe token
- * True if there is a pipe token to consume
- * 
- * @param cmdline command input line
- * @param index   starting index of input to check (updates)
- *
- * @return regexec result
- */
-int consume_pipe(char* cmdline, int* index) {
-	regmatch_t match[1];
-	int error = regexec(&pipe, &cmdline[*index], 1, match, 0);
-	switch (error) {
-		case 0:		
-			// Add end offset to index
-			*index += match[0].rm_eo;
-			return 1;
-		case REG_NOMATCH:
-			return 0;
-		default:
-			// Handle parse error
-			print_parse_error(error, &pipe);
-			return 0;
-	}
-}
-
-/**
- * Consume file_in token
- * True if there is a file_in token consumed
- *
- * @param cmdline command input line
- * @param index   starting index of input to check (updates)
- *
- * @return regexec result
- */
-int consume_file_in(char* cmdline, int* index) {
-	regmatch_t match[1];
-	int error = regexec(&file_in, &cmdline[*index], 1, match, 0);
-	switch (error) {
-		case 0:		
-			// Add end offset to index
-			*index += match[0].rm_eo;
-			return 1;
-		case REG_NOMATCH:
-			return 0;
-		default:
-			// Handle parse error
-			print_parse_error(error, &pipe);
-			return 0;
-	}
-}
-
-/**
- * Direct lookahead for pipe token
- * True if next upcoming token is pipe and not arg
- *
- * @param cmdline command input line
- * @param index   starting index of input to check (does not update)
- *
- * @return regexec result
- */
-int direct_lookahead_pipe(char* cmdline, int* index) {
-	return regexec(&pipe, &cmdline[*index], 0, NULL, 0) == 0;
-}
-
-/**
- * Direct lookahead for file_in token
- * True if next upcoming token is in file and not arg
- *
- * @param cmdline command input line
- * @param index   starting index of input to check (does not update)
- *
- * @return regexec result
- */
-int direct_lookahead_file_in(char* cmdline, int* index) {	
-	return regexec(&file_in, &cmdline[*index], 0, NULL, 0) == 0;
-}
-
-/**
  * Parse all arguments
  *
  * @param task    task struct
@@ -286,9 +277,7 @@ int direct_lookahead_file_in(char* cmdline, int* index) {
 int parse_args(struct task_node* task, char* cmdline, int* index) {
 	task->args = NULL;
 	int last = 0;
-	while (!(last 
-		|| direct_lookahead_pipe(cmdline, index) 
-		|| direct_lookahead_file_in(cmdline, index))) {
+	while (!last && lookahead_arg(cmdline, index)) {
 		last = parse_arg(task, cmdline, index);
 	}
 	return last;
