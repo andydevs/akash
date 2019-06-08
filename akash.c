@@ -54,6 +54,9 @@ void execute_parsed_command(struct parse* parse) {
 	if (parse->infile) {
 		printf("Infile: %s\n", parse->infile);
 	}
+	if (parse->outfile) {
+		printf("Outfile: %s\n", parse->outfile);
+	}
 	if (parse->tasks) {
 		printf("Tasks:\n");
 		struct task_node* taskn;

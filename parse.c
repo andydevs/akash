@@ -67,15 +67,19 @@ void __debug_parse__printf(const char* fmt, ...) {
 
 // Regex strings
 const char* file_string = "^\\s*(\\w|[\\.-~])+(/(\\w|[\\.-])+)*";
-const char* arg_string = "^\\s*[^ \t\\|<]+";
+const char* arg_string = "^\\s*[^ \t\\|<>]+";
 const char* pipe_string = "^\\s*\\|";
 const char* file_in_string = "^\\s*<";
+const char* file_out_string = "^\\s*>";
+const char* whitespace_string = "^\\s*";
 
 // Regular Expressions
 regex_t file;
 regex_t arg;
 regex_t pipe;
 regex_t file_in;
+regex_t file_out;
+regex_t whitespace;
 
 /**
  * Initialize parser
@@ -85,6 +89,8 @@ void parse_init() {
 	regcomp(&arg, arg_string, REG_EXTENDED);
 	regcomp(&pipe, pipe_string, REG_EXTENDED);
 	regcomp(&file_in, file_in_string, REG_EXTENDED);
+	regcomp(&file_out, file_out_string, REG_EXTENDED);
+	regcomp(&whitespace, whitespace_string, REG_EXTENDED);
 }
 
 /**
@@ -95,6 +101,8 @@ void parse_deinit() {
 	regfree(&arg);
 	regfree(&pipe);
 	regfree(&file_in);
+	regfree(&file_out);
+	regfree(&whitespace);
 }
 
 // ------------------------- PARSE HELPERS --------------------------
@@ -124,9 +132,13 @@ void print_parse_error(int error, regex_t* regex) {
 char* get_match_string(char* cmdline, int* index, regmatch_t match[1]) {
 	int start = match[0].rm_so;
 	int end = match[0].rm_eo;
-	while (cmdline[*index + start] == ' ' || cmdline[*index + start] == '\t') {
-		start += 1;
-	}
+	regmatch_t wmatch[1];
+	int error = regexec(&whitespace, &cmdline[*index + start], 1, wmatch, 0);
+	if (error) {
+		print_parse_error(error, &whitespace);
+	} else {
+		start += wmatch[0].rm_eo;
+	}	
 	return strndup(&cmdline[*index + start], end - start);
 }
 
@@ -170,6 +182,32 @@ int consume_pipe(char* cmdline, int* index) {
 int consume_file_in(char* cmdline, int* index) {
 	regmatch_t match[1];
 	int error = regexec(&file_in, &cmdline[*index], 1, match, 0);
+	switch (error) {
+		case 0:		
+			// Add end offset to index
+			*index += match[0].rm_eo;
+			return 1;
+		case REG_NOMATCH:
+			return 0;
+		default:
+			// Handle parse error
+			print_parse_error(error, &pipe);
+			return 0;
+	}
+}
+
+/**
+ * Consume file_out token
+ * True if there is a file_out token consumed
+ *
+ * @param cmdline command input line
+ * @param index   starting index of input to check (updates)
+ *
+ * @return regexec result
+ */
+int consume_file_out(char* cmdline, int* index) {
+	regmatch_t match[1];
+	int error = regexec(&file_out, &cmdline[*index], 1, match, 0);
 	switch (error) {
 		case 0:		
 			// Add end offset to index
@@ -335,6 +373,39 @@ int parse_infile(struct parse* parse, char* cmdline, int* index) {
 }
 
 /**
+ * Parse out file
+ *
+ * @param parse   parse struct
+ * @param cmdline command input line
+ * @param index   starting index of input to check (updates)
+ *
+ * @return regexec result (0 if match is successful)
+ */
+int parse_outfile(struct parse* parse, char* cmdline, int* index) {
+	// Find match in string at index
+	regmatch_t match[1];
+	int error = regexec(&file, &cmdline[*index], 1, match, 0);
+	switch (error) {
+		case 0:
+			// Add command to parse
+			parse_set_outfile(parse, get_match_string(cmdline, index, match));
+			__debug_parse__printf("OUTFILE: %s\n", parse->outfile);	
+		
+			// Add end offset to index
+			*index += match[0].rm_eo;
+			break;
+		case REG_NOMATCH:
+			// Handle no parse
+			break;
+		default:
+			// Handle parse error
+			print_parse_error(error, &file);
+			break;
+	}
+	return error;
+}
+
+/**
  * Parse tasks
  *
  * @param parse   parse struct
@@ -351,6 +422,9 @@ int parse_tasks(struct parse* parse, char* cmdline, int* index) {
 	}
 	while (consume_pipe(cmdline, index)) {
 		PART_OPTIONAL(parse_task(parse, cmdline, index));
+	}
+	if (consume_file_out(cmdline, index)) {
+		PART_REQUIRE(parse_outfile(parse, cmdline, index));
 	}
 	return 0;
 }

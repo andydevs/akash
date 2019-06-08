@@ -20,6 +20,7 @@ struct parse* parse_new() {
 	struct parse* parse = NEW(struct parse);
 	parse->tasks = NULL;
 	parse->infile = NULL;
+	parse->outfile = NULL;
 	return parse;
 }
 
@@ -31,6 +32,16 @@ struct parse* parse_new() {
  */
 void parse_set_infile(struct parse* parse, char* infile) {
 	parse->infile = infile;
+}
+
+/**
+ * Set outfile of parse
+ * 
+ * @param parse   parse struct
+ * @param outfile outfile
+ */
+void parse_set_outfile(struct parse* parse, char* outfile) {
+	parse->outfile = outfile;	
 }
 
 /**
