@@ -238,3 +238,9 @@ The parse file looks so much cleaner because of it.
 
 By the way wouldn't it make sense for parse.c/h to be called parser.c/h and vice
 versa? I'll change that soon.
+
+---------------------------------------------------------------------------------
+
+So parsing is all done now! I'll celebrate by making the banner look fancy!
+
+After that, it's onto execution

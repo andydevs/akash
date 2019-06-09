@@ -20,13 +20,13 @@
 void print_banner(void) {
 	printf("\n");
 	printf("||                                             ||\n");
-	printf("||           ^    |  /    ^    /-- |           ||\n");
-	printf("||          / \\   | /    / \\   |_  |--\\        ||\n");
-	printf("||         /---\\  | \\   /---\\    \\ |  |        ||\n");
-	printf("||        /     \\ |  \\ /     \\ __/ |  |        ||\n");
-	printf("||        Andy Kharbandy's Average Shell       ||\n");
+	printf("||          \e[34m ^    |  /    ^    /-- |\e[0m           ||\n");
+	printf("||          \e[34m/ \\   | /    / \\   |_  |--\\\e[0m        ||\n");
+	printf("||         \e[34m/---\\  | \\   /---\\    \\ |  |\e[0m        ||\n");
+	printf("||        \e[34m/     \\ |  \\ /     \\ __/ |  |\e[0m        ||\n");
+	printf("||        \e[36mAndy Kharbandy's Average Shell\e[0m       ||\n");
 	printf("||                                             ||\n");
-	printf("||        Type ctrl+D or 'exit' to exit        ||\n");
+	printf("||        \e[95mType ctrl+D or 'exit' to exit\e[0m        ||\n");
 	printf("||                                             ||\n");
 	printf("\n");
 }
