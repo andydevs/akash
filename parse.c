@@ -105,7 +105,7 @@ void parse_deinit() {
 	regfree(&whitespace);
 }
 
-// ------------------------- PARSE HELPERS --------------------------
+// -------------------------- PARSE HELPERS ---------------------------
 
 /**
  * Print parser error for regex
@@ -142,7 +142,7 @@ char* get_match_string(char* cmdline, int* index, regmatch_t match[1]) {
 	return strndup(&cmdline[*index + start], end - start);
 }
 
-// -------------------------- TOKEN PARSE ---------------------------
+// -------------------------- TOKEN PARSE ----------------------------
 
 /**
  * Consume token
@@ -178,94 +178,18 @@ int consume(regex_t* token, char* cmdline, int* index, char** output) {
 }
 
 /**
- * Consume pipe token
- * True if there is a pipe token to consume
- * 
- * @param cmdline command input line
- * @param index   starting index of input to check (updates)
+ * Lookahead for next token
  *
- * @return regexec result
- */
-int consume_pipe(char* cmdline, int* index) {
-	regmatch_t match[1];
-	int error = regexec(&pipe, &cmdline[*index], 1, match, 0);
-	switch (error) {
-		case 0:		
-			// Add end offset to index
-			*index += match[0].rm_eo;
-			return 1;
-		case REG_NOMATCH:
-			return 0;
-		default:
-			// Handle parse error
-			print_parse_error(error, &pipe);
-			return 0;
-	}
-}
-
-/**
- * Consume file_in token
- * True if there is a file_in token consumed
- *
- * @param cmdline command input line
- * @param index   starting index of input to check (updates)
- *
- * @return regexec result
- */
-int consume_file_in(char* cmdline, int* index) {
-	regmatch_t match[1];
-	int error = regexec(&file_in, &cmdline[*index], 1, match, 0);
-	switch (error) {
-		case 0:		
-			// Add end offset to index
-			*index += match[0].rm_eo;
-			return 1;
-		case REG_NOMATCH:
-			return 0;
-		default:
-			// Handle parse error
-			print_parse_error(error, &pipe);
-			return 0;
-	}
-}
-
-/**
- * Consume file_out token
- * True if there is a file_out token consumed
- *
- * @param cmdline command input line
- * @param index   starting index of input to check (updates)
- *
- * @return regexec result
- */
-int consume_file_out(char* cmdline, int* index) {
-	regmatch_t match[1];
-	int error = regexec(&file_out, &cmdline[*index], 1, match, 0);
-	switch (error) {
-		case 0:		
-			// Add end offset to index
-			*index += match[0].rm_eo;
-			return 1;
-		case REG_NOMATCH:
-			return 0;
-		default:
-			// Handle parse error
-			print_parse_error(error, &pipe);
-			return 0;
-	}
-}
-
-/**
- * Lookahead for arg token
- *
+ * @param token   token regex
  * @param cmdline command input line
  * @param index   starting index of input to check (does not update)
  *
- * @return regexec result
+ * @return lookahead result
  */
-int lookahead_arg(char* cmdline, int* index) {
-	return regexec(&arg, &cmdline[*index], 0, NULL, 0) == 0;
+int lookahead(regex_t* token, char* cmdline, int* index) {
+	return regexec(&arg, &cmdline[*index], 0, NULL, 0);
 }
+
 
 // -------------------------- PARSE NODES ---------------------------
 
@@ -320,7 +244,7 @@ int parse_arg(struct task_node* task, char* cmdline, int* index) {
 int parse_args(struct task_node* task, char* cmdline, int* index) {
 	task->args = NULL;
 	int last = 0;
-	while (!last && lookahead_arg(cmdline, index)) {
+	while (!(last || lookahead(&arg, cmdline, index))) {
 		last = parse_arg(task, cmdline, index);
 	}
 	return last;
