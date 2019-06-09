@@ -66,6 +66,24 @@ void __debug_parse__printf(const char* fmt, ...) {
 // -------------------------- PARSE NODES ---------------------------
 
 /**
+ * Parse shell command
+ *
+ * @param parse   parse struct
+ * @param cmdline command input line
+ * @param index   starting index of input to check (updates)
+ *
+ * @return regexec result (0 if match is successful)
+ */
+int parse_shcmd(struct parse* parse, char* cmdline, int* index) {
+	char* cmdname;
+	int error = consume(&shcmd, cmdline, index, &cmdname);
+	if (!error) {
+		parse_set_shcmd(parse, cmdname);
+	}
+	return error;
+}
+
+/**
  * Parse command
  *
  * @param task    task struct
@@ -196,24 +214,30 @@ struct parse* parse_command_input(char* cmdline) {
 	// Declare index int and allocate parse struct memory
 	int index = 0;
 	struct parse* parse = parse_new();
-	
-	// First task
-	PARSE_REQUIRE(parse_task(parse, cmdline, &index));
-	// In-file
-	if (consume(&file_in, cmdline, &index, NULL) == 0) {
-		PARSE_REQUIRE(parse_infile(parse, cmdline, &index));
+
+	// If shell command
+	if (consume(&shell, cmdline, &index, NULL) == 0) {
+		PARSE_REQUIRE(parse_shcmd(parse, cmdline, &index));
 	}
-	// Piped tasks
-	while (consume(&pipe, cmdline, &index, NULL) == 0) {
-		PARSE_OPTIONAL(parse_task(parse, cmdline, &index));
-	}
-	// Out-file
-	if (consume(&file_out, cmdline, &index, NULL) == 0) {
-		PARSE_REQUIRE(parse_outfile(parse, cmdline, &index));
-	}
-	// Background
-	if (consume(&background, cmdline, &index, NULL) == 0) {
-		parse_set_background(parse, 1);
+	else {
+		// First task
+		PARSE_REQUIRE(parse_task(parse, cmdline, &index));
+		// In-file
+		if (consume(&file_in, cmdline, &index, NULL) == 0) {
+			PARSE_REQUIRE(parse_infile(parse, cmdline, &index));
+		}
+		// Piped tasks
+		while (consume(&pipe, cmdline, &index, NULL) == 0) {
+			PARSE_OPTIONAL(parse_task(parse, cmdline, &index));
+		}
+		// Out-file
+		if (consume(&file_out, cmdline, &index, NULL) == 0) {
+			PARSE_REQUIRE(parse_outfile(parse, cmdline, &index));
+		}
+		// Background
+		if (consume(&background, cmdline, &index, NULL) == 0) {
+			parse_set_background(parse, 1);
+		}
 	}
 
 	// Exit valid

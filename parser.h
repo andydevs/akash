@@ -26,6 +26,8 @@ struct task_node {
 struct parse {
 	int valid;
 	int background;
+	int shell;
+	char* shcmd;
 	char* infile;
 	char* outfile;
 	struct task_node* tasks;
@@ -37,6 +39,14 @@ struct parse {
  * @return new created parse
  */
 struct parse* parse_new();
+
+/**
+ * Set shell command of parse
+ *
+ * @param parse parse struct
+ * @param shcmd shell command name 
+ */
+void parse_set_shcmd(struct parse* parse, char* shcmd); 
 
 /**
  * Set infile of parse

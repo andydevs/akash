@@ -18,11 +18,24 @@
  */
 struct parse* parse_new() {
 	struct parse* parse = NEW(struct parse);
+	parse->shell = 0;
+	parse->shcmd = NULL;
 	parse->tasks = NULL;
 	parse->infile = NULL;
 	parse->outfile = NULL;
 	parse->background = 0;
 	return parse;
+}
+
+/**
+ * Set shell command of parse
+ *
+ * @param parse parse struct
+ * @param shcmd shell command name 
+ */
+void parse_set_shcmd(struct parse* parse, char* shcmd) {
+	parse->shell = 1;
+	parse->shcmd = shcmd;
 }
 
 /**
@@ -125,6 +138,8 @@ void parse_task_destroy(struct task_node* task) {
  */
 void parse_destroy(struct parse* parse) {
 	if (parse->infile) free(parse->infile);
+	if (parse->outfile) free(parse->outfile);
+	if (parse->shcmd) free(parse->shcmd);
 	if (parse->tasks) parse_task_destroy(parse->tasks);
 	free(parse);
 }

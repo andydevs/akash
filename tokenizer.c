@@ -14,6 +14,8 @@
 #include <string.h>
 
 // Regex strings
+const char* shell_string = "^\\s*!";
+const char* shcmd_string = "^\\s*\\w+";
 const char* file_string = "^\\s*(\\w|[\\.-~])+(/(\\w|[\\.-])+)*";
 const char* arg_string = "^\\s*[^ \t\\|<>&]+";
 const char* pipe_string = "^\\s*\\|";
@@ -31,6 +33,8 @@ regex_t whitespace;
  * Initialize parser
  */
 void parse_init() {
+	regcomp(&shell, shell_string, REG_EXTENDED);
+	regcomp(&shcmd, shcmd_string, REG_EXTENDED);
 	regcomp(&file, file_string, REG_EXTENDED);
 	regcomp(&arg, arg_string, REG_EXTENDED);
 	regcomp(&pipe, pipe_string, REG_EXTENDED);
@@ -44,6 +48,8 @@ void parse_init() {
  * Deinitialize parser
  */
 void parse_deinit() {
+	regfree(&shell);
+	regfree(&shcmd);
 	regfree(&file);
 	regfree(&arg);
 	regfree(&pipe);

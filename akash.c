@@ -51,24 +51,29 @@ void handle_exit(char* cmdline) {
  * @param parse struct representing parsed command
  */
 void execute_parsed_command(struct parse* parse) {
-	if (parse->infile) {
-		printf("Infile: %s\n", parse->infile);
+	if (parse->shell) {
+		printf("Shell command: %s\n", parse->shcmd);
 	}
-	if (parse->outfile) {
-		printf("Outfile: %s\n", parse->outfile);
-	}
-	printf("Background: %i\n", parse->background);
-	if (parse->tasks) {
-		printf("Tasks:\n");
-		struct task_node* taskn;
-		for (taskn = parse->tasks; taskn; taskn = taskn->next) {
-			printf("	Task:\n");
-			printf("		Command: %s\n", taskn->cmd);
-			if (taskn->args) {
-				printf("		Arguments:\n");
-				struct arg_node* argn;
-				for (argn = taskn->args; argn; argn = argn->next) {
-					printf("			%s\n", argn->arg);
+	else {
+		if (parse->infile) {
+			printf("Infile: %s\n", parse->infile);
+		}
+		if (parse->outfile) {
+			printf("Outfile: %s\n", parse->outfile);
+		}
+		printf("Background: %i\n", parse->background);
+		if (parse->tasks) {
+			printf("Tasks:\n");
+			struct task_node* taskn;
+			for (taskn = parse->tasks; taskn; taskn = taskn->next) {
+				printf("	Task:\n");
+				printf("		Command: %s\n", taskn->cmd);
+				if (taskn->args) {
+					printf("		Arguments:\n");
+					struct arg_node* argn;
+					for (argn = taskn->args; argn; argn = argn->next) {
+						printf("			%s\n", argn->arg);
+					}
 				}
 			}
 		}

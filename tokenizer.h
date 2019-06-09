@@ -12,6 +12,8 @@
 #include <regex.h>
 
 // Token types
+regex_t shell;
+regex_t shcmd;
 regex_t file;
 regex_t arg;
 regex_t pipe;
