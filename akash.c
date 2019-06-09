@@ -13,6 +13,7 @@
 #include <string.h>
 #include <readline/readline.h>
 #include "parse.h"
+#include "execute.h"
 
 /**
  * Print banner of shell
@@ -46,41 +47,6 @@ void handle_exit(char* cmdline) {
 }
 
 /**
- * Execute parsed command represented by parse
- * 
- * @param parse struct representing parsed command
- */
-void execute_parsed_command(struct parse* parse) {
-	if (parse->shell) {
-		printf("Shell command: %s\n", parse->shcmd);
-	}
-	else {
-		if (parse->infile) {
-			printf("Infile: %s\n", parse->infile);
-		}
-		if (parse->outfile) {
-			printf("Outfile: %s\n", parse->outfile);
-		}
-		printf("Background: %i\n", parse->background);
-		if (parse->tasks) {
-			printf("Tasks:\n");
-			struct task_node* taskn;
-			for (taskn = parse->tasks; taskn; taskn = taskn->next) {
-				printf("	Task:\n");
-				printf("		Command: %s\n", taskn->cmd);
-				if (taskn->args) {
-					printf("		Arguments:\n");
-					struct arg_node* argn;
-					for (argn = taskn->args; argn; argn = argn->next) {
-						printf("			%s\n", argn->arg);
-					}
-				}
-			}
-		}
-	}
-}
-
-/**
  * Parse and execute command line
  *
  * @param cmdline command line string to execute 
@@ -89,8 +55,10 @@ void handle_command(char* cmdline) {
 	struct parse* parse = parse_command_input(cmdline);
 	if (parse->valid) {
 		execute_parsed_command(parse);
+	} else {
+		printf("ERROR: Command input invalid");
 	}
-	parse_destroy(parse);	
+	parse_destroy(parse);
 }
 
 /**
@@ -107,7 +75,7 @@ int main(int argc, const char** argv) {
 	char *cmdline;
 	while(1) {
 		cmdline = readline("$ ");
-		handle_exit(cmdline);	
+		handle_exit(cmdline);
 		handle_command(cmdline);
 		free(cmdline);
 	}

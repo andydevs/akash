@@ -244,3 +244,9 @@ versa? I'll change that soon.
 So parsing is all done now! I'll celebrate by making the banner look fancy!
 
 After that, it's onto execution
+
+---------------------------------------------------------------------------------
+
+Well I'll have to find a way to replace the linked lists with static arrays...
+
+OR I can find a way to create a static array during execution...
