@@ -225,3 +225,16 @@ anywhere in the string
 ---------------------------------------------------------------------------------
 
 How do I do unit tests???
+
+---------------------------------------------------------------------------------
+
+So the parse.c file was getting to big, so... you guessed it! Split the code!
+
+I created a separate .h and .c file called "tokenizer" to hold all of the token
+parsing code. I also created generic functions which would parse separate tokens.
+Changing the regexes to match the immediate next string helped with that.
+
+The parse file looks so much cleaner because of it.
+
+By the way wouldn't it make sense for parse.c/h to be called parser.c/h and vice
+versa? I'll change that soon.
