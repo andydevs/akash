@@ -11,11 +11,13 @@
 #include "parser.h"
 #include "execute.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+#include <stdarg.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdarg.h>
 
 void __debug_execute__printf(const char* fmt, ...) {
 	va_list args;
@@ -28,7 +30,9 @@ void __debug_execute__printf(const char* fmt, ...) {
 
 void execute_task_as_child(struct task_node* task) {
 	__debug_execute__printf("CMD: %s\n", task->cmd);
+	int error;
 	char* const args[2] = { task->cmd, NULL };
+	__debug_execute__printf("==========EXECUTE TASK==========\n");
 	pid_t pid = fork();
 	switch (pid) {
 		case -1:
@@ -38,17 +42,18 @@ void execute_task_as_child(struct task_node* task) {
 		case 0:
 			// CHILD
 			// Execute statement
-			__debug_execute__printf("==========EXECUTE==========\n");
-			execvp(task->cmd, args);
-			printf("ERROR: Failed to execute!\n");
+			error = execvp(task->cmd, args);
+			if (error == -1) {
+				printf("ERROR! Failed to execute %s: %s\n", task->cmd, strerror(errno));
+			}
 			exit(EXIT_FAILURE);
 			break;
 		default:
 			// PARENT
 			wait(NULL);	
-			__debug_execute__printf("===========================\n");
 			break;
 	}
+	__debug_execute__printf("===============================\n");
 }
 
 /**
