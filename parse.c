@@ -396,13 +396,13 @@ int parse_outfile(struct parse* parse, char* cmdline, int* index) {
 int parse_tasks(struct parse* parse, char* cmdline, int* index) {	
 	__debug_parse__printf("TASKS\n");
 	PART_REQUIRE(parse_task(parse, cmdline, index));
-	if (consume_file_in(cmdline, index)) {
+	if (consume(&file_in, cmdline, index, NULL) == 0) {
 		PART_REQUIRE(parse_infile(parse, cmdline, index));
 	}
-	while (consume_pipe(cmdline, index)) {
+	while (consume(&pipe, cmdline, index, NULL) == 0) {
 		PART_OPTIONAL(parse_task(parse, cmdline, index));
 	}
-	if (consume_file_out(cmdline, index)) {
+	if (consume(&file_out, cmdline, index, NULL) == 0) {
 		PART_REQUIRE(parse_outfile(parse, cmdline, index));
 	}
 	return 0;
