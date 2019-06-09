@@ -145,6 +145,39 @@ char* get_match_string(char* cmdline, int* index, regmatch_t match[1]) {
 // -------------------------- TOKEN PARSE ---------------------------
 
 /**
+ * Consume token
+ * 
+ * @param token   regex token
+ * @param cmdline command input line
+ * @param index   starting index of input to check (updates)
+ * @param output  output buffer to set to token value
+ *
+ * @return true if token was consumed
+ */
+int consume(regex_t* token, char* cmdline, int* index, char** output) {
+	regmatch_t match[1];
+	int error = regexec(token, &cmdline[*index], 1, match, 0);
+	switch (error) {
+		case 0:
+			// Set output if given
+			if (output) {
+				*output = get_match_string(cmdline, index, match);
+			}
+
+			// Add end offset to index
+			*index += match[0].rm_eo;
+			break;
+		case REG_NOMATCH:
+			break;
+		default:
+			// Handle parse error
+			print_parse_error(error, token);
+			break;
+	}
+	return error;
+}
+
+/**
  * Consume pipe token
  * True if there is a pipe token to consume
  * 
@@ -246,27 +279,11 @@ int lookahead_arg(char* cmdline, int* index) {
  * @return regexec result (0 if match is successful)
  */
 int parse_cmd(struct task_node* task, char* cmdline, int* index) {
-	// Find match in string at index
-	regmatch_t match[1];
-	int error = regexec(&file, &cmdline[*index], 1, match, 0);
-	switch (error) {
-		case 0:
-			// Add command to parse
-			task->cmd = get_match_string(cmdline, index, match);
-			__debug_parse__printf("COMMAND: %s\n", task->cmd);	
-		
-			// Add end offset to index
-			*index += match[0].rm_eo;
-			break;
-		case REG_NOMATCH:
-			// Handle no parse
-			task->cmd = NULL;
-			break;
-		default:
-			// Handle parse error
-			task->cmd = NULL;
-			print_parse_error(error, &file);
-			break;
+	char* filename;
+	int error = consume(&file, cmdline, index, &filename);
+	if (!error) {
+		task->cmd = filename;
+		__debug_parse__printf("COMMAND: %s\n", task->cmd);
 	}
 	return error;
 }
@@ -281,24 +298,12 @@ int parse_cmd(struct task_node* task, char* cmdline, int* index) {
  * @return regexec result (0 if match is successful)
  */
 int parse_arg(struct task_node* task, char* cmdline, int* index) {
-	// Find match in string at index
-	regmatch_t match[1];
-	int error = regexec(&arg, &cmdline[*index], 1, match, 0);
-	switch (error) {
-		case 0:	
-			// Add argument to parse
-			task_prepend_arg(task, get_match_string(cmdline, index, match)); 
-			__debug_parse__printf("ARGUMENT: %s\n", task->args->arg);
-			
-			// Add end offset to index
-			*index += match[0].rm_eo;
-			break;
-		case REG_NOMATCH:
-			break;
-		default:
-			// Handle parse error
-			print_parse_error(error, &arg);
-			break;
+	char* argstring;
+	int error = consume(&arg, cmdline, index, &argstring);
+	if (!error) {
+		// Add argument to parse
+		task_prepend_arg(task, argstring); 
+		__debug_parse__printf("ARGUMENT: %s\n", task->args->arg);
 	}
 	return error;
 }
@@ -349,25 +354,12 @@ int parse_task(struct parse* parse, char* cmdline, int* index) {
  * @return regexec result (0 if match is successful)
  */
 int parse_infile(struct parse* parse, char* cmdline, int* index) {
-	// Find match in string at index
-	regmatch_t match[1];
-	int error = regexec(&file, &cmdline[*index], 1, match, 0);
-	switch (error) {
-		case 0:
-			// Add command to parse
-			parse_set_infile(parse, get_match_string(cmdline, index, match));
-			__debug_parse__printf("INFILE: %s\n", parse->infile);	
-		
-			// Add end offset to index
-			*index += match[0].rm_eo;
-			break;
-		case REG_NOMATCH:
-			// Handle no parse
-			break;
-		default:
-			// Handle parse error
-			print_parse_error(error, &file);
-			break;
+	char* filename;
+	int error = consume(&file, cmdline, index, &filename);
+	if (!error) {
+		// Set infile
+		parse_set_infile(parse, filename);
+		__debug_parse__printf("INFILE: %s\n", parse->infile);	
 	}
 	return error;
 }
@@ -382,25 +374,12 @@ int parse_infile(struct parse* parse, char* cmdline, int* index) {
  * @return regexec result (0 if match is successful)
  */
 int parse_outfile(struct parse* parse, char* cmdline, int* index) {
-	// Find match in string at index
-	regmatch_t match[1];
-	int error = regexec(&file, &cmdline[*index], 1, match, 0);
-	switch (error) {
-		case 0:
-			// Add command to parse
-			parse_set_outfile(parse, get_match_string(cmdline, index, match));
-			__debug_parse__printf("OUTFILE: %s\n", parse->outfile);	
-		
-			// Add end offset to index
-			*index += match[0].rm_eo;
-			break;
-		case REG_NOMATCH:
-			// Handle no parse
-			break;
-		default:
-			// Handle parse error
-			print_parse_error(error, &file);
-			break;
+	char* filename;
+	int error = consume(&file, cmdline, index, &filename);
+	if (!error) {
+		// Add command to parse
+		parse_set_outfile(parse, filename);
+		__debug_parse__printf("OUTFILE: %s\n", parse->outfile);	
 	}
 	return error;
 }
