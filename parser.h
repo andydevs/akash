@@ -25,6 +25,7 @@ struct task_node {
 
 struct parse {
 	int valid;
+	int background;
 	char* infile;
 	char* outfile;
 	struct task_node* tasks;
@@ -52,6 +53,14 @@ void parse_set_infile(struct parse* parse, char* infile);
  * @param outfile outfile
  */
 void parse_set_outfile(struct parse* parse, char* outfile);
+
+/**
+ * Set background of parse
+ * 
+ * @param parse   parse struct
+ * @param outfile background
+ */
+void parse_set_background(struct parse* parse, int background);
 
 /**
  * Create new task node

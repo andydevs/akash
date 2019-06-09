@@ -21,6 +21,7 @@ struct parse* parse_new() {
 	parse->tasks = NULL;
 	parse->infile = NULL;
 	parse->outfile = NULL;
+	parse->background = 0;
 	return parse;
 }
 
@@ -42,6 +43,16 @@ void parse_set_infile(struct parse* parse, char* infile) {
  */
 void parse_set_outfile(struct parse* parse, char* outfile) {
 	parse->outfile = outfile;	
+}
+
+/**
+ * Set background of parse
+ * 
+ * @param parse   parse struct
+ * @param outfile background
+ */
+void parse_set_background(struct parse* parse, int background) {
+	parse->background = background;
 }
 
 /**

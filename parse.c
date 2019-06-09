@@ -211,6 +211,10 @@ struct parse* parse_command_input(char* cmdline) {
 	if (consume(&file_out, cmdline, &index, NULL) == 0) {
 		PARSE_REQUIRE(parse_outfile(parse, cmdline, &index));
 	}
+	// Background
+	if (consume(&background, cmdline, &index, NULL) == 0) {
+		parse_set_background(parse, 1);
+	}
 
 	// Exit valid
 	PARSE_VALID()
