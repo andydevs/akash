@@ -180,30 +180,6 @@ int parse_outfile(struct parse* parse, char* cmdline, int* index) {
 	return error;
 }
 
-/**
- * Parse tasks
- *
- * @param parse   parse struct
- * @param cmdline command input line
- * @param index   starting index of input to check (updates)
- *
- * @return parse result (0 if match is successful)
- */
-int parse_tasks(struct parse* parse, char* cmdline, int* index) {	
-	__debug_parse__printf("TASKS\n");
-	PART_REQUIRE(parse_task(parse, cmdline, index));
-	if (consume(&file_in, cmdline, index, NULL) == 0) {
-		PART_REQUIRE(parse_infile(parse, cmdline, index));
-	}
-	while (consume(&pipe, cmdline, index, NULL) == 0) {
-		PART_OPTIONAL(parse_task(parse, cmdline, index));
-	}
-	if (consume(&file_out, cmdline, index, NULL) == 0) {
-		PART_REQUIRE(parse_outfile(parse, cmdline, index));
-	}
-	return 0;
-}
-
 // --------------------- MAIN PARSE FUNCTION ----------------------
 
 /**
@@ -221,8 +197,20 @@ struct parse* parse_command_input(char* cmdline) {
 	int index = 0;
 	struct parse* parse = parse_new();
 	
-	// Parse component
-	PARSE_REQUIRE(parse_tasks(parse, cmdline, &index))	
+	// First task
+	PARSE_REQUIRE(parse_task(parse, cmdline, &index));
+	// In-file
+	if (consume(&file_in, cmdline, &index, NULL) == 0) {
+		PARSE_REQUIRE(parse_infile(parse, cmdline, &index));
+	}
+	// Piped tasks
+	while (consume(&pipe, cmdline, &index, NULL) == 0) {
+		PARSE_OPTIONAL(parse_task(parse, cmdline, &index));
+	}
+	// Out-file
+	if (consume(&file_out, cmdline, &index, NULL) == 0) {
+		PARSE_REQUIRE(parse_outfile(parse, cmdline, &index));
+	}
 
 	// Exit valid
 	PARSE_VALID()
