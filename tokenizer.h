@@ -24,12 +24,12 @@ regex_t background;
 /**
  * Initialize parser
  */
-void parse_init();
+void tokenizer_init();
 
 /**
  * Deinitialize parser
  */
-void parse_deinit(); 
+void tokenizer_deinit(); 
 
 /**
  * Consume token

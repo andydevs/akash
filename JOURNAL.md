@@ -255,3 +255,16 @@ OR I can find a way to create a static array during execution...
 
 There are times when I can't seem to split into separate functions... or rather,
 it's gonna take a bit of creativity
+
+---------------------------------------------------------------------------------
+
+It's hard to remember to type my thoughts out into this journal...
+
+Anyways, I was able to split up the args building code into separate functions...
+so that's cool.
+
+I also got multiple arguments to work.
+
+My next move is to have the tasks run asynchronously using SIGCHILD to wait on
+them.
+

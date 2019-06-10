@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <readline/readline.h>
-#include "parse.h"
+#include "parser.h"
 #include "execute.h"
 
 /**
@@ -41,7 +41,7 @@ void print_banner(void) {
 void handle_exit(char* cmdline) {
 	if (!cmdline || !strcmp(cmdline, "exit")) {
 		printf("Exiting...\n");
-		parse_deinit();
+		parser_deinit();
 		exit(EXIT_SUCCESS);
 	}	
 }
@@ -70,7 +70,7 @@ void handle_command(char* cmdline) {
  * @return exit status
  */
 int main(int argc, const char** argv) {
-	parse_init();
+	parser_init();
 	print_banner();
 	char *cmdline;
 	while(1) {

@@ -8,96 +8,24 @@
  * Author:  Anshul Kharbanda
  * Created: 3 - 24 - 2019
  */
-#pragma once
-
-#define NEW(type) (type*)malloc(sizeof(type))
-
-struct arg_node {
-	char* arg;
-	struct arg_node* next;
-};
-
-struct task_node {
-	char* cmd;
-	struct arg_node* args;
-	struct task_node* next;
-};
-
-struct parse {
-	int valid;
-	int background;
-	int shell;
-	char* shcmd;
-	char* infile;
-	char* outfile;
-	struct task_node* tasks;
-};
+#include "parse.h"
 
 /**
- * Create new parse
- *
- * @return new created parse
+ * Initialize parser
  */
-struct parse* parse_new();
+void parser_init();
 
 /**
- * Set shell command of parse
- *
- * @param parse parse struct
- * @param shcmd shell command name 
+ * Deinitialize parser
  */
-void parse_set_shcmd(struct parse* parse, char* shcmd); 
+void parser_deinit();
 
 /**
- * Set infile of parse
+ * Parse command input into parse struct
  * 
- * @param parse  parse struct
- * @param infile infile
- */
-void parse_set_infile(struct parse* parse, char* infile);
-
-/**
- * Set outfile of parse
- * 
- * @param parse   parse struct
- * @param outfile outfile
- */
-void parse_set_outfile(struct parse* parse, char* outfile);
-
-/**
- * Set background of parse
- * 
- * @param parse   parse struct
- * @param outfile background
- */
-void parse_set_background(struct parse* parse, int background);
-
-/**
- * Create new task node
+ * @param cmdline command line input
  *
- * @return new created task node
+ * @return parse struct
  */
-struct task_node* task_new();
- 
-/**
- * Add task to parse
- *
- * @parse parse parse struct
- * @parse task  task struct
- */
-void parse_prepend_task(struct parse* parse, struct task_node* taskn);
+struct parse* parse_command_input(char* cmdline);
 
-/**
- * Add arg to task
- *
- * @parse task task struct
- * @parse arg  argument string
- */
-void task_prepend_arg(struct task_node* task, char* arg);
-
-/**
- * Destroy parse struct
- *
- * @param parse struct
- */
-void parse_destroy(struct parse* parse);

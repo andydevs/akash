@@ -32,7 +32,7 @@ regex_t whitespace;
 /**
  * Initialize parser
  */
-void parse_init() {
+void tokenizer_init() {
 	regcomp(&shell, shell_string, REG_EXTENDED);
 	regcomp(&shcmd, shcmd_string, REG_EXTENDED);
 	regcomp(&file, file_string, REG_EXTENDED);
@@ -47,7 +47,7 @@ void parse_init() {
 /**
  * Deinitialize parser
  */
-void parse_deinit() {
+void tokenizer_deinit() {
 	regfree(&shell);
 	regfree(&shcmd);
 	regfree(&file);
