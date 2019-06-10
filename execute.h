@@ -12,6 +12,16 @@
 #include "parser.h"
 
 /**
+ * Initialize execute
+ */
+void execute_init();
+
+/**
+ * Deinitialize execute
+ */
+void execute_deinit();
+
+/**
  * Execute parsed command represented by parse
  * 
  * @param parse struct representing parsed command

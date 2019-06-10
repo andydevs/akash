@@ -268,3 +268,9 @@ I also got multiple arguments to work.
 My next move is to have the tasks run asynchronously using SIGCHILD to wait on
 them.
 
+---------------------------------------------------------------------------------
+
+So it appears I cannot use SIGCHLD (not SIGCHILD, forgot there's no I), since
+that screws up the prompt thing... so, I'll just have the system wait afterwards.
+This way it will start all processes so we won't have a deadlock-ish situation
+if someone has pipes going on.

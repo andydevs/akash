@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -30,6 +31,8 @@ void __debug_execute__printf(const char* fmt, ...) {
 #endif
 	va_end(args);
 }
+
+// ----------------------------- EXECUTE -------------------------------
 
 /**
  * Handle child process. Execute task command. Print error if error.
@@ -105,7 +108,7 @@ void fork_and_execute_task(struct task_node* task) {
 	switch (pid) {	
 		case -1: printf("ERROR: Failed to fork!\n"); break;     // ERROR
 		case 0:  handle_child(task, (char* const*)args); break; // CHILD	
-		default: wait(NULL); break; 						    // PARENT
+		default: break;											// PARENT
 	}
 }
 
@@ -122,6 +125,10 @@ void execute_parsed_command(struct parse* parse) {
 		for (task = parse->tasks; task; task = task->next) {		
 			fork_and_execute_task(task);
 		}
+
+		// Wait for all children processes
+		int pid;
+		do { pid = wait(NULL); } while (pid > 0);
 	}
 	__debug_execute__printf("=======================================\n");
 }
