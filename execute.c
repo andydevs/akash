@@ -36,9 +36,8 @@ void __debug_execute__printf(const char* fmt, ...) {
  *
  * @param task task node to execute
  */
-void handle_child(struct task_node* task) {
+void handle_child(struct task_node* task, char* const* args) {
 	__debug_execute__printf("==========EXECUTE CHILD=========\n");
-	char* const args[2] = { task->cmd, NULL };
 	int error = execvp(task->cmd, args);
 	if (error == -1) {
 		printf("ERROR! Failed to execute %s: %s\n", task->cmd, strerror(errno));
@@ -53,16 +52,38 @@ void handle_child(struct task_node* task) {
  * @param task task node to execute
  */
 void fork_and_execute_task(struct task_node* task) {
+	// Begin
+	__debug_execute__printf("==========FORK EXECUTE==========\n");
 	__debug_execute__printf("CMD: %s\n", task->cmd);
-	int error;
-	char* const args[2] = { task->cmd, NULL };
-	__debug_execute__printf("==========EXECUTE TASK==========\n");
+
+	// Build args vector
+	__debug_execute__printf("Build args vector\n");	
+	int size = 2;
+	struct arg_node* argn;
+	for (argn = task->args; argn; argn = argn->next) { size++; }
+	char* args[size];
+	args[0] = task->cmd;
+	args[size-1] = NULL;
+	int place = size-2;
+	for (argn = task->args; argn; argn = argn->next) {
+		args[place] = argn->arg;
+		place--;
+	}
+	for (int i = 0; i < size; i++) {
+		if (args[i] == NULL) __debug_execute__printf("NULL\n");
+		else __debug_execute__printf("%s\n", args[i]);
+	}
+	
+	// Fork and execute
+	__debug_execute__printf("Fork and execute...\n");
 	pid_t pid = fork();
 	switch (pid) {	
-		case -1: printf("ERROR: Failed to fork!\n"); break; // ERROR
-		case 0: handle_child(task); break; // CHILD	
-		default: wait(NULL); break; // PARENT
+		case -1: printf("ERROR: Failed to fork!\n"); break;     // ERROR
+		case 0:  handle_child(task, (char* const*)args); break; // CHILD	
+		default: wait(NULL); break; 						    // PARENT
 	}
+	
+	// End
 	__debug_execute__printf("================================\n");
 }
 
