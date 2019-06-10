@@ -122,8 +122,11 @@ void fork_and_execute_task(struct task_node* task) {
 void execute_parsed_command(struct parse* parse) {
 	__debug_execute__printf("================EXECUTE================\n");
 	if (!parse->shell) {
-		struct task_node* task = parse->tasks;
-		fork_and_execute_task(task);
+		// Iterate through tasks. Fork/execute each
+		struct task_node* task;
+		for (task = parse->tasks; task; task = task->next) {		
+			fork_and_execute_task(task);
+		}
 	}
 	__debug_execute__printf("=======================================\n");
 }
