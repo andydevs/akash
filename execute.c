@@ -37,12 +37,11 @@ void __debug_execute__printf(const char* fmt, ...) {
  * @param task task node to execute
  */
 void handle_child(struct task_node* task, char* const* args) {
-	__debug_execute__printf("==========EXECUTE CHILD=========\n");
+	__debug_execute__printf("Execute child:\n");
 	int error = execvp(task->cmd, args);
 	if (error == -1) {
 		printf("ERROR! Failed to execute %s: %s\n", task->cmd, strerror(errno));
 	} 
-	__debug_execute__printf("================================\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -92,8 +91,7 @@ void populate_args_array(char** args, int size, struct task_node* task) {
  */
 void fork_and_execute_task(struct task_node* task) {
 	// Begin
-	__debug_execute__printf("==========FORK EXECUTE==========\n");
-	__debug_execute__printf("CMD: %s\n", task->cmd);
+	__debug_execute__printf("Command: %s\n", task->cmd);
 
 	// Build args vector
 	__debug_execute__printf("Build args vector\n");	
@@ -109,9 +107,6 @@ void fork_and_execute_task(struct task_node* task) {
 		case 0:  handle_child(task, (char* const*)args); break; // CHILD	
 		default: wait(NULL); break; 						    // PARENT
 	}
-	
-	// End
-	__debug_execute__printf("================================\n");
 }
 
 /**
