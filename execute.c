@@ -41,6 +41,11 @@ void __debug_execute__printf(const char* fmt, ...) {
  */
 void handle_child(struct task_node* task, char* const* args) {
 	__debug_execute__printf("Execute child:\n");
+
+	// TODO: Set IO
+	//	See Build IO todo
+	
+	// Execute child
 	int error = execvp(task->cmd, args);
 	if (error == -1) {
 		printf("ERROR! Failed to execute %s: %s\n", task->cmd, strerror(errno));
@@ -103,6 +108,7 @@ void fork_and_execute_task(struct task_node* task) {
 	populate_args_array(args, size, task);	
 	
 	// Fork and execute
+	// TODO: Send IO arguments to child
 	__debug_execute__printf("Fork and execute...\n");
 	pid_t pid = fork();
 	switch (pid) {	
@@ -120,9 +126,16 @@ void fork_and_execute_task(struct task_node* task) {
 void execute_parsed_command(struct parse* parse) {
 	__debug_execute__printf("================EXECUTE================\n");
 	if (!parse->shell) {
+		// TODO: Build IO
+		//	IO is a list of file descriptor integer pairs.
+		// 	Either pipes, infiles, or outfiles, arranged 
+		//  as the read/write arguments for IO. If the fd
+		//	int is -1, that end is kept as is in child
+
 		// Iterate through tasks. Fork/execute each
 		struct task_node* task;
 		for (task = parse->tasks; task; task = task->next) {		
+			// TODO: Send IO to task through extra arguments
 			fork_and_execute_task(task);
 		}
 
