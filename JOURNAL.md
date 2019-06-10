@@ -250,3 +250,8 @@ After that, it's onto execution
 Well I'll have to find a way to replace the linked lists with static arrays...
 
 OR I can find a way to create a static array during execution...
+
+---------------------------------------------------------------------------------
+
+There are times when I can't seem to split into separate functions... or rather,
+it's gonna take a bit of creativity

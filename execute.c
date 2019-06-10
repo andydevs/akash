@@ -47,6 +47,45 @@ void handle_child(struct task_node* task, char* const* args) {
 }
 
 /**
+ * Get number of arguments from task
+ *
+ * @param task task node being executed
+ *
+ * @return number of arguments
+ */
+int get_number_of_arguments(struct task_node* task) {
+	__debug_execute__printf("Get number of arguments: ");
+	int size = 2;
+	struct arg_node* argn;
+	for (argn = task->args; argn; argn = argn->next) { size++; }
+	__debug_execute__printf("%i\n", size);
+	return size;
+}
+
+/**
+ * Populate args array with arg nodes in task
+ *
+ * @param args args array
+ * @param size size of args array
+ * @param task task node to populate from
+ */
+void populate_args_array(char** args, int size, struct task_node* task) {
+	__debug_execute__printf("Populate args array:\n");
+	args[0] = task->cmd;
+	args[size-1] = NULL;
+	struct arg_node* argn;
+	int place = size-2;
+	for (argn = task->args; argn; argn = argn->next) {
+		args[place] = argn->arg;
+		place--;
+	}
+	for (int i = 0; i < size; i++) {
+		if (args[i] == NULL) __debug_execute__printf("NULL\n");
+		else __debug_execute__printf("%s\n", args[i]);
+	}
+}
+
+/**
  * Fork a child process and execute task in it
  * 
  * @param task task node to execute
@@ -58,21 +97,9 @@ void fork_and_execute_task(struct task_node* task) {
 
 	// Build args vector
 	__debug_execute__printf("Build args vector\n");	
-	int size = 2;
-	struct arg_node* argn;
-	for (argn = task->args; argn; argn = argn->next) { size++; }
+	int size = get_number_of_arguments(task);
 	char* args[size];
-	args[0] = task->cmd;
-	args[size-1] = NULL;
-	int place = size-2;
-	for (argn = task->args; argn; argn = argn->next) {
-		args[place] = argn->arg;
-		place--;
-	}
-	for (int i = 0; i < size; i++) {
-		if (args[i] == NULL) __debug_execute__printf("NULL\n");
-		else __debug_execute__printf("%s\n", args[i]);
-	}
+	populate_args_array(args, size, task);	
 	
 	// Fork and execute
 	__debug_execute__printf("Fork and execute...\n");
