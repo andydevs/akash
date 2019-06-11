@@ -119,6 +119,22 @@ void fork_and_execute_task(struct task_node* task) {
 }
 
 /**
+ * Return number of tasks
+ *
+ * @param parse parse struct
+ *
+ * @return number of tasks
+ */
+int get_number_of_tasks(struct parse* parse) {
+	__debug_execute__printf("Number of tasks: ");
+	int size = 0;
+	struct task_node* taskn;
+	for (taskn = parse->tasks; taskn; taskn = taskn->next) { size++; }
+	__debug_execute__printf("%i\n", size);
+	return size;
+}
+
+/**
  * Execute parsed command represented by parse
  * 
  * @param parse struct representing parsed command
@@ -131,7 +147,9 @@ void execute_parsed_command(struct parse* parse) {
 		// 	Either pipes, infiles, or outfiles, arranged 
 		//  as the read/write arguments for IO. If the fd
 		//	int is -1, that end is kept as is in child
-		//  Task struct has IO file descriptor
+			
+		// Get number of tasks
+		int size = get_number_of_tasks(parse);
 
 		// Iterate through tasks. Fork/execute each
 		int i;
