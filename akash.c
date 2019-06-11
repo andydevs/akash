@@ -75,10 +75,10 @@ int main(int argc, const char** argv) {
 	char *cmdline;
 	while(1) {
 		cmdline = readline("$ ");
+		handle_exit(cmdline);
 		if (strcmp(cmdline, "") != 0) {
-			handle_exit(cmdline);
 			handle_command(cmdline);
-			free(cmdline);
 		}
+		free(cmdline);
 	}
 }
