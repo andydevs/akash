@@ -134,6 +134,10 @@ int get_number_of_tasks(struct parse* parse) {
 	return size;
 }
 
+#define IO_BUFF_SIZE 2
+#define IO_READ 0
+#define IO_WRITE 1
+
 /**
  * Execute parsed command represented by parse
  * 
@@ -148,8 +152,12 @@ void execute_parsed_command(struct parse* parse) {
 		//  as the read/write arguments for IO. If the fd
 		//	int is -1, that end is kept as is in child
 			
-		// Get number of tasks
+		// Create file descriptors 
 		int size = get_number_of_tasks(parse);
+		int pipe_fd[size-1][IO_BUFF_SIZE];
+		for (int i = 0; i < size-1; i++) {
+			pipe(pipe_fd[i]);
+		}
 
 		// Iterate through tasks. Fork/execute each
 		int i;
@@ -158,6 +166,12 @@ void execute_parsed_command(struct parse* parse) {
 			printf("Size %i\n", i);
 			// TODO: Send IO to task through extra arguments
 			fork_and_execute_task(taskn);
+		}
+
+		// Close file descriptors
+		for (int i = 0; i < size; i++) {
+			close(pipe_fd[i][IO_READ]);
+			close(pipe_fd[i][IO_WRITE]);
 		}
 
 		// Wait for all children processes
