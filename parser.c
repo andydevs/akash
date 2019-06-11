@@ -232,7 +232,7 @@ struct parse* parse_command_input(char* cmdline) {
 			PARSE_REQUIRE(parse_infile(parse, cmdline, &index));
 		}
 		// Piped tasks
-		while (consume(&pipe, cmdline, &index, NULL) == 0) {
+		while (consume(&piper, cmdline, &index, NULL) == 0) {
 			PARSE_OPTIONAL(parse_task(parse, cmdline, &index));
 		}
 		// Out-file

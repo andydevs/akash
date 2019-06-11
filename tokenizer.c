@@ -37,7 +37,7 @@ void tokenizer_init() {
 	regcomp(&shcmd, shcmd_string, REG_EXTENDED);
 	regcomp(&file, file_string, REG_EXTENDED);
 	regcomp(&arg, arg_string, REG_EXTENDED);
-	regcomp(&pipe, pipe_string, REG_EXTENDED);
+	regcomp(&piper, pipe_string, REG_EXTENDED);
 	regcomp(&file_in, file_in_string, REG_EXTENDED);
 	regcomp(&file_out, file_out_string, REG_EXTENDED);
 	regcomp(&background, background_string, REG_EXTENDED);
@@ -52,7 +52,7 @@ void tokenizer_deinit() {
 	regfree(&shcmd);
 	regfree(&file);
 	regfree(&arg);
-	regfree(&pipe);
+	regfree(&piper);
 	regfree(&file_in);
 	regfree(&file_out);
 	regfree(&background);

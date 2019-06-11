@@ -281,3 +281,46 @@ Meanwhile, I discovered an error in the program. If I type in a blank line, the
 program errors... so I'll have to get rid of that...
 
 Fixed... just had to check if the line wasn't empty before proceeding...
+
+---------------------------------------------------------------------------------
+
+OH MY GOD! I have had the dumbest code error that I have ever seen!
+
+So I've been trying to implement pipes for each of the tasks being run. I had
+something like this:
+
+```c
+int pipe_fd[size-1][2];
+for (int i = 0; i < size-1; i++) {
+	pipe(pipe_fd[i]);
+}
+```
+
+I would close the files later, but, point being, I kept getting a segfault error
+whenever this calls...
+
+So I just tried one pipe
+
+```c
+int fd[2];
+pipe(fd);
+close(fd[0]);
+close(fd[1]);
+```
+
+Still the same error...
+
+So I tried it in the main function... Still the same goddamn error!
+
+At this point, I'm frantically trying to google "pipe segmentation fault" and
+getting nothing. I was about to give up... until I noticed something.
+
+The term "pipe" in the program was _also_ declared in tokenizer.h (the pipe
+token), which was being imported in akash.c, _overwriting_ the pipe function
+and causing the segfault when I call it...
+
+Jesus...
+
+Changed "pipe" in tokenizer.h to "piper" (it works, whatever). Error was fixed...
+
+I do this for fun, ladies and gents... My life is a joke.

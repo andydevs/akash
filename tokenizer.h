@@ -16,7 +16,7 @@ regex_t shell;
 regex_t shcmd;
 regex_t file;
 regex_t arg;
-regex_t pipe;
+regex_t piper;
 regex_t file_in;
 regex_t file_out;
 regex_t background;
