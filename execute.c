@@ -131,12 +131,15 @@ void execute_parsed_command(struct parse* parse) {
 		// 	Either pipes, infiles, or outfiles, arranged 
 		//  as the read/write arguments for IO. If the fd
 		//	int is -1, that end is kept as is in child
+		//  Task struct has IO file descriptor
 
 		// Iterate through tasks. Fork/execute each
-		struct task_node* task;
-		for (task = parse->tasks; task; task = task->next) {		
+		int i;
+		struct task_node* taskn;
+		for (taskn = parse->tasks, i = 0; taskn; taskn = taskn->next, i++) {
+			printf("Size %i\n", i);
 			// TODO: Send IO to task through extra arguments
-			fork_and_execute_task(task);
+			fork_and_execute_task(taskn);
 		}
 
 		// Wait for all children processes
