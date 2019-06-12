@@ -151,20 +151,16 @@ void execute_parsed_command(struct parse* parse) {
 		// 	Either pipes, infiles, or outfiles, arranged 
 		//  as the read/write arguments for IO. If the fd
 		//	int is -1, that end is kept as is in child
-			
-		// Create file descriptors 
-		int size = get_number_of_tasks(parse);
-		int pipe_fd[size-1][IO_BUFF_SIZE];
-		for (int i = 0; i < size-1; i++) {
-			pipe(pipe_fd[i]);
-		}
 		
 		// Build file descriptor table
+		int size = get_number_of_tasks(parse);
 		int fd[size][IO_BUFF_SIZE];
+		int pipe_fd[IO_BUFF_SIZE];
 		fd[0][IO_READ] = -1;
 		for (int i = 0; i < size-1; i++) {
-			fd[i][IO_WRITE] = pipe_fd[i][IO_WRITE];
-			fd[i+1][IO_READ] = pipe_fd[i][IO_READ];
+			pipe(pipe_fd);
+			fd[i][IO_WRITE] = pipe_fd[IO_WRITE];
+			fd[i+1][IO_READ] = pipe_fd[IO_READ];
 		}
 		fd[size-1][IO_WRITE] = -1;
 
@@ -172,7 +168,7 @@ void execute_parsed_command(struct parse* parse) {
 		int i;
 		struct task_node* taskn;
 		for (taskn = parse->tasks, i = 0; taskn; taskn = taskn->next, i++) {
-			printf("Size %i\n", i);
+			__debug_execute__printf("Size %i\n", i);
 			// TODO: Send IO to task through extra arguments
 			fork_and_execute_task(taskn);
 		}
