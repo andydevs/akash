@@ -158,6 +158,15 @@ void execute_parsed_command(struct parse* parse) {
 		for (int i = 0; i < size-1; i++) {
 			pipe(pipe_fd[i]);
 		}
+		
+		// Build file descriptor table
+		int fd[size][IO_BUFF_SIZE];
+		fd[0][IO_READ] = -1;
+		for (int i = 0; i < size-1; i++) {
+			fd[i][IO_WRITE] = pipe_fd[i][IO_WRITE];
+			fd[i+1][IO_READ] = pipe_fd[i][IO_READ];
+		}
+		fd[size-1][IO_WRITE] = -1;
 
 		// Iterate through tasks. Fork/execute each
 		int i;
@@ -170,8 +179,12 @@ void execute_parsed_command(struct parse* parse) {
 
 		// Close file descriptors
 		for (int i = 0; i < size; i++) {
-			close(pipe_fd[i][IO_READ]);
-			close(pipe_fd[i][IO_WRITE]);
+			if (fd[i][IO_READ] != -1) {
+				close(fd[i][IO_READ]);
+			}
+			if (fd[i][IO_WRITE] != -1) {
+				close(fd[i][IO_WRITE]);
+			}
 		}
 
 		// Wait for all children processes
