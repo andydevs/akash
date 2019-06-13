@@ -91,21 +91,15 @@ void close_io_table(int fd[][2], int size) {
 	}
 }
 
-// ----------------------------- EXECUTE -------------------------------
-
 /**
- * Handle child process. Execute task command. Print error if error.
- *
- * @param task task node to execute
- * @param args args list
- * @param ind  task index number
+ * Set IO file descriptors in child process
+ * 
+ * @param ind  index of task for child process
  * @param fd   file descriptor table
  * @param size size of file descriptor table
  */
-void handle_child(struct task_node* task, char* const* args, int ind, int fd[][2], int size) {
-	__debug_execute__printf("Execute child:\n");
-
-	// TODO: Set IO
+void set_io_in_child(int ind, int fd[][2], int size) {
+	__debug_execute__printf("Set IO in child:\n");
 	if (fd[ind][IO_READ] != -1) {
 		dup2(fd[ind][IO_READ], STDIN_FILENO);
 	}
@@ -113,7 +107,18 @@ void handle_child(struct task_node* task, char* const* args, int ind, int fd[][2
 		dup2(fd[ind][IO_WRITE], STDOUT_FILENO);
 	}
 	close_io_table(fd, size);	
-	
+}
+
+// ----------------------------- EXECUTE -------------------------------
+
+/**
+ * Execute task command in child process. Print error if error.
+ *
+ * @param task task node to execute
+ * @param args args list
+ */
+void execute_task_in_child(struct task_node* task, char* const* args) {
+	__debug_execute__printf("Execute task in child:\n");
 	// Execute child
 	int error = execvp(task->cmd, args);
 	if (error == -1) {
@@ -181,14 +186,16 @@ void fork_and_execute_task(struct task_node* task, int ind, int fd[][2], int siz
 	populate_args_array(args, asize, task);	
 	
 	// Fork and execute
-	// TODO: Send IO arguments to child
 	__debug_execute__printf("Fork and execute...\n");
 	pid_t pid = fork();
 	switch (pid) {
 		// ERROR
 		case -1: printf("ERROR: Failed to fork!\n"); break; 
 		// CHILD
-		case 0:  handle_child(task, (char* const*)args, ind, fd, size); break; 
+		case 0:
+			set_io_in_child(ind, fd, size);	
+			execute_task_in_child(task, (char* const*)args);
+			break; 
 		// PARENT
 		default: break; 
 	}
