@@ -34,6 +34,8 @@ void __debug_execute__printf(const char* fmt, ...) {
 	va_end(args);
 }
 
+// -------------------------------- IO ---------------------------------
+
 // IO Constants
 #define IO_BUFF_SIZE 2
 #define IO_READ 0
@@ -109,23 +111,7 @@ void set_io_in_child(int ind, int fd[][2], int size) {
 	close_io_table(fd, size);	
 }
 
-// ----------------------------- EXECUTE -------------------------------
-
-/**
- * Execute task command in child process. Print error if error.
- *
- * @param task task node to execute
- * @param args args list
- */
-void execute_task_in_child(struct task_node* task, char* const* args) {
-	__debug_execute__printf("Execute task in child:\n");
-	// Execute child
-	int error = execvp(task->cmd, args);
-	if (error == -1) {
-		printf("ERROR! Failed to execute %s: %s\n", task->cmd, strerror(errno));
-	} 
-	exit(EXIT_FAILURE);
-}
+// ----------------------------- ARGSLIST ------------------------------
 
 /**
  * Get number of arguments from task
@@ -166,40 +152,7 @@ void populate_args_array(char** args, int size, struct task_node* task) {
 	}
 }
 
-/**
- * Fork a child process and execute task in it
- * 
- * @param task task node to execute
- * @param ind  index of task node
- * @param fd   file descriptor table
- * @param size size of file descriptor table
- */
-void fork_and_execute_task(struct task_node* task, int ind, int fd[][2], int size) {
-	// Begin
-	__debug_execute__printf("Index: %i\n", ind);
-	__debug_execute__printf("Command: %s\n", task->cmd);
-
-	// Build args vector
-	__debug_execute__printf("Build args vector\n");	
-	int asize = get_number_of_arguments(task->args);
-	char* args[asize];
-	populate_args_array(args, asize, task);	
-	
-	// Fork and execute
-	__debug_execute__printf("Fork and execute...\n");
-	pid_t pid = fork();
-	switch (pid) {
-		// ERROR
-		case -1: printf("ERROR: Failed to fork!\n"); break; 
-		// CHILD
-		case 0:
-			set_io_in_child(ind, fd, size);	
-			execute_task_in_child(task, (char* const*)args);
-			break; 
-		// PARENT
-		default: break; 
-	}
-}
+// ---------------------------- TASKSLIST ------------------------------
 
 /**
  * Return number of tasks
@@ -234,6 +187,59 @@ struct task_node* reverse_tasks_list(struct task_node* tasks) {
 		taskc = taskn;
 	}
 	return taskp;
+}
+
+// ----------------------------- EXECUTE -------------------------------
+
+/**
+ * Execute task command in child process. Print error if error.
+ *
+ * @param task task node to execute
+ * @param args args list
+ */
+void execute_task_in_child(struct task_node* task, char* const* args) {
+	__debug_execute__printf("Execute task in child:\n");
+	// Execute child
+	int error = execvp(task->cmd, args);
+	if (error == -1) {
+		printf("ERROR! Failed to execute %s: %s\n", task->cmd, strerror(errno));
+	} 
+	exit(EXIT_FAILURE);
+}
+
+/**
+ * Fork a child process and execute task in it
+ * 
+ * @param task task node to execute
+ * @param ind  index of task node
+ * @param fd   file descriptor table
+ * @param size size of file descriptor table
+ */
+void fork_and_execute_task(struct task_node* task, int ind, int fd[][2], int size) {
+	// Begin
+	__debug_execute__printf("Index: %i\n", ind);
+	__debug_execute__printf("Command: %s\n", task->cmd);
+
+	// Build args vector
+	__debug_execute__printf("Build args vector\n");	
+	int asize = get_number_of_arguments(task->args);
+	char* args[asize];
+	populate_args_array(args, asize, task);	
+	
+	// Fork and execute
+	__debug_execute__printf("Fork and execute...\n");
+	pid_t pid = fork();
+	switch (pid) {
+		// ERROR
+		case -1: printf("ERROR: Failed to fork!\n"); break; 
+		// CHILD
+		case 0:
+			set_io_in_child(ind, fd, size);	
+			execute_task_in_child(task, (char* const*)args);
+			break; 
+		// PARENT
+		default: break; 
+	}
 }
 
 /**
