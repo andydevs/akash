@@ -32,6 +32,7 @@ void __debug_execute__printf(const char* fmt, ...) {
 	va_end(args);
 }
 
+// IO Constants
 #define IO_BUFF_SIZE 2
 #define IO_READ 0
 #define IO_WRITE 1
@@ -85,6 +86,12 @@ void handle_child(struct task_node* task, char* const* args, int ind, int fd[][2
 	__debug_execute__printf("Execute child:\n");
 
 	// TODO: Set IO
+	if (fd[ind][IO_READ] != -1) {
+		dup2(fd[ind][IO_READ], STDIN_FILENO);
+	}
+	if (fd[ind][IO_WRITE] != -1) {
+		dup2(fd[ind][IO_WRITE], STDOUT_FILENO);
+	}
 	close_io_table(fd, size);	
 	
 	// Execute child

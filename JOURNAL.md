@@ -324,3 +324,10 @@ Jesus...
 Changed "pipe" in tokenizer.h to "piper" (it works, whatever). Error was fixed...
 
 I do this for fun, ladies and gents... My life is a joke.
+
+---------------------------------------------------------------------------------
+
+Hallelujiah pipes work!
+
+I've created a separate file descriptor management system which creates the entire
+IO chain separately before handing it to `handle_child`. Should be easy to debug.
