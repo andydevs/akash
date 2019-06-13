@@ -139,6 +139,25 @@ int get_number_of_tasks(struct task_node* tasks) {
 }
 
 /**
+ * Reverse tasks linked list
+ *
+ * @param tasks task list pointer
+ */
+struct task_node* reverse_tasks_list(struct task_node* tasks) {
+	struct task_node *taskp, *taskc, *taskn;
+	taskc = tasks;
+	taskp = NULL;
+	taskn = NULL;
+	while (taskc != NULL) {
+		taskn = taskc->next;
+		taskc->next = taskp;
+		taskp = taskc;
+		taskc = taskn;
+	}
+	return taskp;
+}
+
+/**
  * Populate IO table with pipes and in/out files
  *
  * @param fd   file descriptor array
@@ -189,11 +208,14 @@ void execute_parsed_command(struct parse* parse) {
 		int fd[size][IO_BUFF_SIZE];
 		populate_io_table(fd, size);		
 
+		// Reverse tasks list
+		struct task_node* reversed = reverse_tasks_list(parse->tasks);
+
 		// Iterate through tasks. Fork/execute each
 		int i;
 		struct task_node* taskn;
-		for (taskn = parse->tasks, i = 0; taskn; taskn = taskn->next, i++) {
-			__debug_execute__printf("Size %i\n", i);
+		for (taskn = reversed, i = 0; taskn; taskn = taskn->next, i++) {
+			__debug_execute__printf("Task %i\n", i);
 			// TODO: Send IO to task through extra arguments
 			fork_and_execute_task(taskn);
 		}
