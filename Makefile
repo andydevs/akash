@@ -2,7 +2,7 @@ TARGET=akash
 SOURCES=$(wildcard *.c)
 OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
 LIBS=-lreadline
-FLAGS=-g -DDEBUG_EXECUTE
+FLAGS=-g
 
 executable: $(TARGET)
 
@@ -10,7 +10,7 @@ executable: $(TARGET)
 	gcc -c -o $@ $< $(FLAGS)
 
 $(TARGET): $(OBJECTS)
-	gcc -o $@ $^ $(LIBS)
+	gcc -o $@ $^ $(LIBS) $(FLAGS)
 
 run: $(TARGET)
 	./$(TARGET)

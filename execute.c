@@ -36,18 +36,56 @@ void __debug_execute__printf(const char* fmt, ...) {
 #define IO_READ 0
 #define IO_WRITE 1
 
+/**
+ * Populate IO table with pipes and in/out files
+ *
+ * @param fd   file descriptor array
+ * @param size size of file descriptor array
+ */
+void populate_io_table(int fd[][2], int size) {
+	int pipe_fd[IO_BUFF_SIZE];
+	fd[0][IO_READ] = -1;
+	for (int i = 0; i < size-1; i++) {
+		pipe(pipe_fd);
+		fd[i][IO_WRITE] = pipe_fd[IO_WRITE];
+		fd[i+1][IO_READ] = pipe_fd[IO_READ];
+	}
+	fd[size-1][IO_WRITE] = -1;
+}
+
+/**
+ * Close all open files in IO table
+ *
+ * @param fd   file descriptor array
+ * @param size size of file descriptor array
+ */
+void close_io_table(int fd[][2], int size) {
+	for (int i = 0; i < size; i++) {
+		if (fd[i][IO_READ] != -1) {
+			close(fd[i][IO_READ]);
+		}
+		if (fd[i][IO_WRITE] != -1) {
+			close(fd[i][IO_WRITE]);
+		}
+	}
+}
+
 // ----------------------------- EXECUTE -------------------------------
 
 /**
  * Handle child process. Execute task command. Print error if error.
  *
  * @param task task node to execute
+ * @param args args list
+ * @param ind  task index number
+ * @param fd   file descriptor table
+ * @param size size of file descriptor table
  */
-void handle_child(struct task_node* task, char* const* args) {
+void handle_child(struct task_node* task, char* const* args, int ind, int fd[][2], int size) {
 	__debug_execute__printf("Execute child:\n");
 
 	// TODO: Set IO
-	//	See Build IO todo
+	close_io_table(fd, size);	
 	
 	// Execute child
 	int error = execvp(task->cmd, args);
@@ -100,25 +138,32 @@ void populate_args_array(char** args, int size, struct task_node* task) {
  * Fork a child process and execute task in it
  * 
  * @param task task node to execute
+ * @param ind  index of task node
+ * @param fd   file descriptor table
+ * @param size size of file descriptor table
  */
-void fork_and_execute_task(struct task_node* task) {
+void fork_and_execute_task(struct task_node* task, int ind, int fd[][2], int size) {
 	// Begin
+	__debug_execute__printf("Index: %i\n", ind);
 	__debug_execute__printf("Command: %s\n", task->cmd);
 
 	// Build args vector
 	__debug_execute__printf("Build args vector\n");	
-	int size = get_number_of_arguments(task->args);
-	char* args[size];
-	populate_args_array(args, size, task);	
+	int asize = get_number_of_arguments(task->args);
+	char* args[asize];
+	populate_args_array(args, asize, task);	
 	
 	// Fork and execute
 	// TODO: Send IO arguments to child
 	__debug_execute__printf("Fork and execute...\n");
 	pid_t pid = fork();
-	switch (pid) {	
-		case -1: printf("ERROR: Failed to fork!\n"); break;     // ERROR
-		case 0:  handle_child(task, (char* const*)args); break; // CHILD	
-		default: break;											// PARENT
+	switch (pid) {
+		// ERROR
+		case -1: printf("ERROR: Failed to fork!\n"); break; 
+		// CHILD
+		case 0:  handle_child(task, (char* const*)args, ind, fd, size); break; 
+		// PARENT
+		default: break; 
 	}
 }
 
@@ -158,40 +203,6 @@ struct task_node* reverse_tasks_list(struct task_node* tasks) {
 }
 
 /**
- * Populate IO table with pipes and in/out files
- *
- * @param fd   file descriptor array
- * @param size size of file descriptor array
- */
-void populate_io_table(int fd[][2], int size) {
-	int pipe_fd[IO_BUFF_SIZE];
-	fd[0][IO_READ] = -1;
-	for (int i = 0; i < size-1; i++) {
-		pipe(pipe_fd);
-		fd[i][IO_WRITE] = pipe_fd[IO_WRITE];
-		fd[i+1][IO_READ] = pipe_fd[IO_READ];
-	}
-	fd[size-1][IO_WRITE] = -1;
-}
-
-/**
- * Close all open files in IO table
- *
- * @param fd   file descriptor array
- * @param size size of file descriptor array
- */
-void close_io_table(int fd[][2], int size) {
-	for (int i = 0; i < size; i++) {
-		if (fd[i][IO_READ] != -1) {
-			close(fd[i][IO_READ]);
-		}
-		if (fd[i][IO_WRITE] != -1) {
-			close(fd[i][IO_WRITE]);
-		}
-	}
-}
-
-/**
  * Execute parsed command represented by parse
  * 
  * @param parse struct representing parsed command
@@ -199,12 +210,14 @@ void close_io_table(int fd[][2], int size) {
 void execute_parsed_command(struct parse* parse) {
 	__debug_execute__printf("================EXECUTE================\n");
 	if (!parse->shell) {
+		// Get number of tasks	
+		int size = get_number_of_tasks(parse->tasks);
+
 		// Build IO
 		// IO is a list of file descriptor integer pairs.
 		// Either pipes, infiles, or outfiles, arranged 
 		// as the read/write arguments for IO. If the fd
 		// int is -1, that end is kept as is in child
-		int size = get_number_of_tasks(parse->tasks);
 		int fd[size][IO_BUFF_SIZE];
 		populate_io_table(fd, size);		
 
@@ -212,12 +225,10 @@ void execute_parsed_command(struct parse* parse) {
 		struct task_node* reversed = reverse_tasks_list(parse->tasks);
 
 		// Iterate through tasks. Fork/execute each
-		int i;
+		int ind;
 		struct task_node* taskn;
-		for (taskn = reversed, i = 0; taskn; taskn = taskn->next, i++) {
-			__debug_execute__printf("Task %i\n", i);
-			// TODO: Send IO to task through extra arguments
-			fork_and_execute_task(taskn);
+		for (taskn = reversed, ind = 0; taskn; taskn = taskn->next, ind++) {
+			fork_and_execute_task(taskn, ind, fd, size);
 		}
 
 		// Close file descriptors
