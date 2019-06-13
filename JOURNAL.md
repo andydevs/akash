@@ -331,3 +331,7 @@ Hallelujiah pipes work!
 
 I've created a separate file descriptor management system which creates the entire
 IO chain separately before handing it to `handle_child`. Should be easy to debug.
+
+---------------------------------------------------------------------------------
+
+File IO was easy...

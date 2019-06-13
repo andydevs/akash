@@ -11,6 +11,7 @@
 #include "parser.h"
 #include "execute.h"
 #include <stdio.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -18,6 +19,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 
 /**
@@ -36,22 +38,40 @@ void __debug_execute__printf(const char* fmt, ...) {
 #define IO_BUFF_SIZE 2
 #define IO_READ 0
 #define IO_WRITE 1
+#define IO_STDMODE S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH
 
 /**
  * Populate IO table with pipes and in/out files
  *
- * @param fd   file descriptor array
- * @param size size of file descriptor array
+ * @param fd      file descriptor array
+ * @param size    size of file descriptor array
+ * @param infile  name of infile (NULL if none specified)
+ * @param outfile name of outfile (NULL if none specified)
  */
-void populate_io_table(int fd[][2], int size) {
+void populate_io_table(int fd[][2], int size, char* infile, char* outfile) {
+	// Handle creating infile
+	if (infile) {
+		fd[0][IO_READ] = open(infile, O_RDONLY);
+	}
+	else {
+		fd[0][IO_READ] = -1;
+	}
+
+	// Handle creating pipes
 	int pipe_fd[IO_BUFF_SIZE];
-	fd[0][IO_READ] = -1;
 	for (int i = 0; i < size-1; i++) {
 		pipe(pipe_fd);
 		fd[i][IO_WRITE] = pipe_fd[IO_WRITE];
 		fd[i+1][IO_READ] = pipe_fd[IO_READ];
 	}
-	fd[size-1][IO_WRITE] = -1;
+	
+	// Handle creating outfile
+	if (outfile) {
+		fd[size-1][IO_WRITE] = open(outfile, O_WRONLY | O_CREAT, IO_STDMODE);
+	}
+	else {
+		fd[size-1][IO_WRITE] = -1;
+	}
 }
 
 /**
@@ -226,7 +246,7 @@ void execute_parsed_command(struct parse* parse) {
 		// as the read/write arguments for IO. If the fd
 		// int is -1, that end is kept as is in child
 		int fd[size][IO_BUFF_SIZE];
-		populate_io_table(fd, size);		
+		populate_io_table(fd, size, parse->infile, parse->outfile);
 
 		// Reverse tasks list
 		struct task_node* reversed = reverse_tasks_list(parse->tasks);
