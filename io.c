@@ -9,24 +9,18 @@
  * Created: 3 - 24 - 2019
  */
 #include "io.h"
+#include "debug.h"
 #include <unistd.h>
-#include <stdio.h>
-#include <stdarg.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-/**
- * Print on DEBUG_EXECUTE_IO
- */
-void __debug__printf(const char* fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-#ifdef DEBUG_EXECUTE_IO
-	vprintf(fmt, args);
+// Debug system
+#ifdef DEBUG_EXECUTE_ARGSLIST
+DEBUG_ON("\e[33m[execute:io]\e[0m")
+#else
+DEBUG_OFF
 #endif
-	va_end(args);
-}
 
 /**
  * Populate IO table with pipes and in/out files

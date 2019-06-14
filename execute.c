@@ -8,6 +8,7 @@
  * Author:  Anshul Kharbanda
  * Created: 3 - 24 - 2019
  */
+#include "debug.h"
 #include "execute.h"
 #include "parser.h"
 #include "taskslist.h"
@@ -18,24 +19,18 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <stdarg.h>
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-/**
- * Print on DEBUG_EXECUTE
- */
-static void __debug__printf(const char* fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-#ifdef DEBUG_EXECUTE
-	vprintf(fmt, args);
+// Debug system
+#ifdef DEBUG_EXECUTE_EXECUTE
+DEBUG_ON("\e[34m[execute:execute]\e[0m")
+#else
+DEBUG_OFF
 #endif
-	va_end(args);
-}
 
 /**
  * Execute task command in child process. Print error if error.
@@ -94,7 +89,6 @@ void fork_and_execute_task(struct task_node* task, int ind, int fd[][2], int siz
  * @param parse struct representing parsed command
  */
 void execute_parsed_command(struct parse* parse) {
-	__debug__printf("================EXECUTE================\n");
 	if (!parse->shell) {
 		// Get number of tasks	
 		int size = get_number_of_tasks(parse->tasks);
@@ -124,5 +118,4 @@ void execute_parsed_command(struct parse* parse) {
 		int pid;
 		do { pid = wait(NULL); } while (pid > 0);
 	}
-	__debug__printf("=======================================\n");
 }

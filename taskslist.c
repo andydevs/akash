@@ -9,20 +9,14 @@
  * Created: 3 - 24 - 2019
  */
 #include "taskslist.h"
-#include <stdio.h>
-#include <stdarg.h>
+#include "debug.h"
 
-/**
- * Print on DEBUG_EXECUTE_TASKSLIST
- */
-static void __debug__printf(const char* fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
+// Debug system
 #ifdef DEBUG_EXECUTE_TASKSLIST
-	vprintf(fmt, args);
+DEBUG_ON("\e[32m[execute:taskslist]\e[0m")
+#else
+DEBUG_OFF
 #endif
-	va_end(args);
-}
 
 /**
  * Return number of tasks
@@ -32,7 +26,7 @@ static void __debug__printf(const char* fmt, ...) {
  * @return number of tasks
  */
 int get_number_of_tasks(struct task_node* tasks) {
-	__debug__printf("Number of tasks: ");
+	__debug__printf("Number of tasks:\n");
 	int size = 0;
 	struct task_node* taskn;
 	for (taskn = tasks; taskn; taskn = taskn->next) { size++; }
