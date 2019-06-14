@@ -335,3 +335,10 @@ IO chain separately before handing it to `handle_child`. Should be easy to debug
 ---------------------------------------------------------------------------------
 
 File IO was easy...
+
+---------------------------------------------------------------------------------
+
+I created a new debug system. Rather than having blocks, I decided to go for the
+node debug approach and create headers before debug statements... multicolored
+headers! I also created a header file which creates custom debug statements with
+the headers... I might have overengineered this, but it's alright. It looks cool!
