@@ -22,10 +22,21 @@
 		va_start(args, fmt); \
 		vprintf(fullfmt, args); \
 		va_end(args); \
-	}
+	};
 
 #define DEBUG_OFF \
-	static void __debug__printf(const char* fmt, ...) { }
+	static void __debug__printf(const char* fmt, ...) { };
+
+#ifdef DEBUG
+#define DEBUG_PARSE
+#define DEBUG_EXECUTE
+#endif
+
+#ifdef DEBUG_PARSE
+#define DEBUG_PARSE_PARSE
+#define DEBUG_PARSE_PARSER
+#define DEBUG_PARSE_TOKENIZER
+#endif
 
 #ifdef DEBUG_EXECUTE
 #define DEBUG_EXECUTE_EXECUTE

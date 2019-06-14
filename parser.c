@@ -9,6 +9,7 @@
  * Created: 3 - 24 - 2019
  */
 #include "parser.h"
+#include "debug.h"
 #include "tokenizer.h"
 #include "parse.h"
 #include <stdio.h>
@@ -16,27 +17,18 @@
 #include <string.h>
 #include <stdarg.h>
 
-/**
- * DEBUG_PARSE print statement
- *
- * @param fmt output format
- * @param ... varargs to apply to output
- */
-void __debug_parse__printf(const char* fmt, ...) {
-	va_list args;
-	va_start(args, fmt);
-#ifdef DEBUG_PARSE
-	vprintf(fmt, args);
+// Debug function
+#ifdef DEBUG_PARSE_PARSER
+DEBUG_ON("\e[33m[parse:parser]\e[0m")
+#else
+DEBUG_OFF
 #endif
-	va_end(args);
-}
 
 // -------------------- PARSE TEMPLATE MACROS ---------------------
 
 #define PARSE_INVALID() \
 	parse->valid = 0; \
-	__debug_parse__printf("Command line invalid\n"); \
-	__debug_parse__printf("=========================\n\n"); \
+	__debug__printf("Command line invalid\n"); \
 	return parse;
 
 #define PARSE_REQUIRE(parse_result) \
@@ -87,7 +79,7 @@ int parse_cmd(struct task_node* task, char* cmdline, int* index) {
 	int error = consume(&file, cmdline, index, &filename);
 	if (!error) {
 		task->cmd = filename;
-		__debug_parse__printf("COMMAND: %s\n", task->cmd);
+		__debug__printf("COMMAND: %s\n", task->cmd);
 	}
 	return error;
 }
@@ -107,7 +99,7 @@ int parse_arg(struct task_node* task, char* cmdline, int* index) {
 	if (!error) {
 		// Add argument to parse
 		task_prepend_arg(task, argstring); 
-		__debug_parse__printf("ARGUMENT: %s\n", task->args->arg);
+		__debug__printf("ARGUMENT: %s\n", task->args->arg);
 	}
 	return error;
 }
@@ -141,7 +133,7 @@ int parse_args(struct task_node* task, char* cmdline, int* index) {
  */
 int parse_task(struct parse* parse, char* cmdline, int* index) {
 	struct task_node* task = NEW(struct task_node);
-	__debug_parse__printf("TASK\n");
+	__debug__printf("TASK\n");
 	PART_REQUIRE(parse_cmd(task, cmdline, index))
 	PART_OPTIONAL(parse_args(task, cmdline, index))
 	parse_prepend_task(parse, task);
@@ -163,7 +155,7 @@ int parse_infile(struct parse* parse, char* cmdline, int* index) {
 	if (!error) {
 		// Set infile
 		parse_set_infile(parse, filename);
-		__debug_parse__printf("INFILE: %s\n", parse->infile);	
+		__debug__printf("INFILE: %s\n", parse->infile);	
 	}
 	return error;
 }
@@ -183,7 +175,7 @@ int parse_outfile(struct parse* parse, char* cmdline, int* index) {
 	if (!error) {
 		// Add command to parse
 		parse_set_outfile(parse, filename);
-		__debug_parse__printf("OUTFILE: %s\n", parse->outfile);	
+		__debug__printf("OUTFILE: %s\n", parse->outfile);	
 	}
 	return error;
 }
@@ -213,8 +205,7 @@ void parser_deinit() {
  */
 struct parse* parse_command_input(char* cmdline) {
 	// Parse header entered
-	__debug_parse__printf("\n==========PARSE==========\n"); \
-	__debug_parse__printf("Entered: %s\n", cmdline);
+	__debug__printf("Entered: %s\n", cmdline);
 	
 	// Declare index int and allocate parse struct memory
 	int index = 0;
@@ -247,7 +238,6 @@ struct parse* parse_command_input(char* cmdline) {
 
 	// Exit parse valid
 	parse->valid = 1; 
-	__debug_parse__printf("Command line valid\n"); 
-	__debug_parse__printf("=========================\n\n"); 
+	__debug__printf("Command line valid\n"); 
 	return parse;
 }

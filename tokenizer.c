@@ -9,9 +9,17 @@
  * Created: 3 - 24 - 2019
  */
 #include "tokenizer.h"
+#include "debug.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+// Debug function
+#ifdef DEBUG_PARSE_TOKENIZER
+DEBUG_ON("\e[35m[parse:tokenizer]\e[0m")
+#else
+DEBUG_OFF
+#endif
 
 // Regex strings
 const char* shell_string = "^\\s*!";
@@ -33,6 +41,7 @@ regex_t whitespace;
  * Initialize parser
  */
 void tokenizer_init() {
+	__debug__printf("Initialize...\n");
 	regcomp(&shell, shell_string, REG_EXTENDED);
 	regcomp(&shcmd, shcmd_string, REG_EXTENDED);
 	regcomp(&file, file_string, REG_EXTENDED);
@@ -48,6 +57,7 @@ void tokenizer_init() {
  * Deinitialize parser
  */
 void tokenizer_deinit() {
+	__debug__printf("Deinitialize...\n");
 	regfree(&shell);
 	regfree(&shcmd);
 	regfree(&file);
