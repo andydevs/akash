@@ -8,13 +8,21 @@
  * Author:  Anshul Kharbanda
  * Created: 3 - 24 - 2019
  */
+#include "parser.h"
+#include "execute.h"
+#include "debug.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <readline/readline.h>
-#include "parser.h"
-#include "execute.h"
+
+// Debug statement
+#ifdef DEBUG_MAIN
+DEBUG_ON("[main]")
+#else
+DEBUG_OFF
+#endif
 
 /**
  * Print banner of shell
@@ -71,11 +79,13 @@ void handle_command(char* cmdline) {
  * @return exit status
  */
 int main(int argc, const char** argv) {
+	__debug__printf("Program start\n");
 	parser_init();
 	print_banner();
 	char *cmdline;
 	while(1) {
 		cmdline = readline("$ ");
+		__debug__printf("Read %s\n", cmdline);
 		handle_exit(cmdline);
 		if (strcmp(cmdline, "") != 0) {
 			handle_command(cmdline);

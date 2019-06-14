@@ -28,6 +28,7 @@
 	static void __debug__printf(const char* fmt, ...) { };
 
 #ifdef DEBUG
+#define DEBUG_MAIN
 #define DEBUG_PARSE
 #define DEBUG_EXECUTE
 #endif
