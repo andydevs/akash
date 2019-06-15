@@ -10,11 +10,10 @@
  */
 #include "debug.h"
 #include "execute.h"
-#include "parser.h"
 #include "taskslist.h"
 #include "argslist.h"
 #include "io.h"
-#include "shellcommand.h"
+#include "shellcommand/shellcommand.h"
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>

@@ -8,8 +8,8 @@
  * Author:  Anshul Kharbanda
  * Created: 3 - 24 - 2019
  */
-#include "parser.h"
-#include "execute.h"
+#include "parser/parser.h"
+#include "execute/execute.h"
 #include "debug.h"
 #include <stdlib.h>
 #include <stdio.h>
