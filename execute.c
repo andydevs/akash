@@ -14,6 +14,7 @@
 #include "taskslist.h"
 #include "argslist.h"
 #include "io.h"
+#include "shellcommand.h"
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -89,7 +90,12 @@ void fork_and_execute_task(struct task_node* task, int ind, int fd[][2], int siz
  * @param parse struct representing parsed command
  */
 void execute_parsed_command(struct parse* parse) {
-	if (!parse->shell) {
+	if (parse->shell) {
+		// Parse shell command
+		__debug__printf("Process shell command: %s\n", parse->shcmd);
+		execute_shellcommand(parse->shcmd);		
+	}
+	else {
 		// Get number of tasks	
 		int size = get_number_of_tasks(parse->tasks);
 
