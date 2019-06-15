@@ -10,6 +10,7 @@
  */
 #include "shellcommand.h"
 #include "debug.h"
+#include "version.h"
 #include <string.h>
 #include <stdio.h>
 
