@@ -1,7 +1,19 @@
+FLAGS=-g $(patsubst %,-D%,$(DEBUG))
+LIBRARIES=-lreadline -lparser -lexecute -lshellcommand
+
 .PHONY: run debug clean
 
-akash: akash.o parser.o tokenizer.o parse.o execute.o argslist.o taskslist.o io.o shellcommand.o
-	gcc -o $@ $^ -lreadline -g $(patsubst %,-D%,$(DEBUG))
+akash: akash.o libparser.a libexecute.a libshellcommand.a
+	gcc -o $@ akash.o -L. $(LIBRARIES) 
+
+libshellcommand.a: shellcommand.o
+	ar rcs $@ $^
+
+libexecute.a: execute.o argslist.o taskslist.o io.o
+	ar rcs $@ $^
+
+libparser.a: parser.o tokenizer.o parse.o
+	ar rcs $@ $^
 
 %.o: %.c
 	gcc -c -o $@ $< $(FLAGS)
@@ -13,4 +25,4 @@ debug: akash
 	gdb akash
 
 clean:
-	rm -f akash akash.o parser.o tokenizer.o parse.o execute.o argslist.o taskslist.o io.o shellcommand.o
+	rm -f akash *.o *.a
