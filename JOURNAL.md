@@ -342,3 +342,10 @@ I created a new debug system. Rather than having blocks, I decided to go for the
 node debug approach and create headers before debug statements... multicolored
 headers! I also created a header file which creates custom debug statements with
 the headers... I might have overengineered this, but it's alright. It looks cool!
+
+---------------------------------------------------------------------------------
+
+Well, now my goal is to work on the build system, i.e. splitting code into separate
+libraries.
+
+I first want to see if I can use ld instead of gcc for linking files

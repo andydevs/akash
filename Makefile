@@ -1,23 +1,16 @@
-TARGET=akash
-SOURCES=$(wildcard *.c)
-OBJECTS=$(patsubst %.c,%.o,$(SOURCES))
-LIBS=-lreadline
-FLAGS=-g $(patsubst %,-D%,$(DEBUG))
+.PHONY: run debug clean
 
-executable: $(TARGET)
+akash: akash.o parser.o tokenizer.o parse.o execute.o argslist.o taskslist.o io.o shellcommand.o
+	gcc -o $@ $^ -lreadline -g $(patsubst %,-D%,$(DEBUG))
 
 %.o: %.c
 	gcc -c -o $@ $< $(FLAGS)
 
-$(TARGET): $(OBJECTS)
-	gcc -o $@ $^ $(LIBS) $(FLAGS)
+run: akash
+	./akash
 
-run: $(TARGET)
-	./$(TARGET)
-
-debug: $(TARGET)
-	gdb $(TARGET)
+debug: akash
+	gdb akash
 
 clean:
-	rm -f $(TARGET)
-	rm -f $(OBJECTS)
+	rm -f akash akash.o parser.o tokenizer.o parse.o execute.o argslist.o taskslist.o io.o shellcommand.o
