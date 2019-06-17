@@ -15,8 +15,8 @@
 #include <stdio.h>
 
 // Debug statements
-#ifdef DEBUG_SHELLCOMMAND
-DEBUG_ON("[shellcommand]")
+#ifdef DEBUG_SHELLSHCMD
+DEBUG_ON("\e[93m[shellcommand]\e[0m")
 #else
 DEBUG_OFF
 #endif
@@ -29,11 +29,20 @@ void whoami() {
 }
 
 /**
- * Shell command not found
+ * Print shell version
  */
-void shellnotfound(char* shcmd) {
-	printf("ERROR! Shell command not found: %s\n", shcmd);
+void version() {
+	printf("v%i.%i.%i\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 }
+
+// ------------------------------------ EXECUTE ------------------------------------
+
+// Shell command handling macro
+#define SHCMD(command, func) \
+	__debug__printf("Recieved command \"%s\"\n", shcmd); \
+	__debug__printf("Compare with \"%s\": %i\n", command, strcmp(shcmd, command)); \
+	__debug__printf("Matches \"%s\": %i\n", command, strcmp(shcmd, command) == 0); \
+	if (strcmp(shcmd, command) == 0) { func(); return; }
 
 /**
  * Lookup and execute shellcommand
@@ -41,6 +50,11 @@ void shellnotfound(char* shcmd) {
  * @param shcmd shell command name to execute
  */
 void execute_shellcommand(char* shcmd) {
-	if (strcmp(shcmd, "whoami")) whoami();
-	else shellnotfound(shcmd);
+	// Shell command handling
+	SHCMD("whoami", whoami);
+	SHCMD("version", version);
+
+	// Shell command not found
+	__debug__printf("No matches for \"%s\"\n", shcmd);
+	printf("ERROR! Shell command not found: %s\n", shcmd);
 }
