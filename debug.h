@@ -12,6 +12,7 @@
 #include <stdarg.h>
 #include <string.h>
 
+// Debug function if debug is on
 #define DEBUG_ON(HEADER) \
 	static void __debug__printf(const char* fmt, ...) { \
 		char fullfmt[128]; \
@@ -24,8 +25,11 @@
 		va_end(args); \
 	};
 
+// Debug function if debug is off
 #define DEBUG_OFF \
 	static void __debug__printf(const char* fmt, ...) { };
+
+// Debug flag groups
 
 #ifdef DEBUG
 #define DEBUG_MAIN
