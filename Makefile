@@ -1,13 +1,18 @@
 .PHONY: run debug clean
 .FORCE: 
 
+all: akash/akash beemoviescript/beemoviescript
+
 akash/akash: parser/libparser.a execute/libexecute.a shellcommand/libshellcommand.a .FORCE
 	$(MAKE) akash -C akash
+
+beemoviescript/beemoviescript: .FORCE
+	$(MAKE) beemoviescript -C beemoviescript
 
 shellcommand/libshellcommand.a: .FORCE
 	$(MAKE) libshellcommand.a -C shellcommand
 
-execute/libexecute.a: .FORCE
+execute/libexecute.a: parser/libparser.a .FORCE
 	$(MAKE) libexecute.a -C execute
 
 parser/libparser.a: .FORCE
