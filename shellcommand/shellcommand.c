@@ -35,6 +35,15 @@ void version() {
 	printf("v%i.%i.%i\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 }
 
+/**
+ * Print author information
+ */
+void author() {
+	printf("Author: %s\n", AUTHOR_NAME);
+	printf("Github: %s\n", AUTHOR_GITHUB);
+	printf("Email: %s\n", AUTHOR_EMAIL);
+}
+
 // ------------------------------------ EXECUTE ------------------------------------
 
 // Shell command handling macro
@@ -53,6 +62,7 @@ void execute_shellcommand(char* shcmd) {
 	// Shell command handling
 	SHCMD("whoami", whoami);
 	SHCMD("version", version);
+	SHCMD("author", author);
 
 	// Shell command not found
 	__debug__printf("No matches for \"%s\"\n", shcmd);

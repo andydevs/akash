@@ -30,16 +30,15 @@ DEBUG_OFF
  */
 void print_banner(void) {
 	printf("\n");
-	printf("||                                             ||\n");
-	printf("||          \e[34m ^    |  /    ^    /-- |\e[0m           ||\n");
-	printf("||          \e[34m/ \\   | /    / \\   |_  |--\\\e[0m        ||\n");
-	printf("||         \e[34m/---\\  | \\   /---\\    \\ |  |\e[0m        ||\n");
-	printf("||        \e[34m/     \\ |  \\ /     \\ __/ |  |\e[0m        ||\n");
-	printf("||        \e[36mAndy Kharbandy's Average Shell\e[0m       ||\n");
-	printf("||        \e[36mv%i.%i.%i Created by %s\e[0m           ||\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, PROGRAM_AUTHOR);
-	printf("||                                             ||\n");
-	printf("||        \e[95mType ctrl+D or 'exit' to exit\e[0m        ||\n");
-	printf("||                                             ||\n");
+	printf("||                                              ||\n");
+	printf("||          \e[34m ^    |  /    ^    /-- |\e[0m            ||\n");
+	printf("||          \e[34m/ \\   | /    / \\   |_  |--\\\e[0m         ||\n");
+	printf("||         \e[34m/---\\  | \\   /---\\    \\ |  |\e[0m         ||\n");
+	printf("||        \e[34m/     \\ |  \\ /     \\ __/ |  |\e[0m         ||\n");
+	printf("||        \e[36mAndy Kharbandy's Average Shell\e[0m        ||\n");
+	printf("||                                              ||\n");
+	printf("||        \e[95mType ctrl+D or 'exit' to exit\e[0m         ||\n");
+	printf("||                                              ||\n");
 	printf("\n");
 }
 
