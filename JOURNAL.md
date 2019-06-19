@@ -349,3 +349,173 @@ Well, now my goal is to work on the build system, i.e. splitting code into separ
 libraries.
 
 I first want to see if I can use ld instead of gcc for linking files
+
+---------------------------------------------------------------------------------
+
+So I've done a few things since the last entry.
+
+The first thing, ld doesn't work... I'd have to use gcc for program. However,
+ar rcs works for libraries!
+
+So in the beginning my project folder looked like this
+
+	akash
+	  | akash.c
+	  | parser.h
+	  | parser.c
+	  | parse.h
+	  | parse.c
+	  | tokenizer.h
+	  | tokenizer.c
+	  | execute.h
+	  | execute.c
+	  | taskslist.h
+	  | taskslist.c
+	  | argslist.h
+	  | argslist.c
+	  | io.h
+	  | io.c
+	  | shellcommand.h
+	  | shellcommand.c
+	  | Makefile
+
+Here was my Makefile
+
+```make
+SOURCES=$(wildcard *.c)
+OBJECTS=$(patsubst %.o,%.c)
+FLAGS=-g -lreadline $(patsubst %,-D%,$(DEBUG))
+
+akash: $(OBJECTS)
+	gcc -o $@ $^ $(FLAGS)
+
+%.o: %.c
+	gcc -c -o $@ $^
+
+run: akash
+	./akash
+
+debug: akash
+	gdb akash
+
+clean:
+	rm -f akash
+	rm -f *.o
+```
+
+I started work by one-by-one moving source code into separate libraries in the
+Makefile. I eventually got a Makefile like this.
+
+```make
+LIBS=-L. -lparser -lexecute -lshellcommand
+FLAGS=-g $(patsubst %,-D%,$(DEBUG))
+
+akash: akash.o libparser.a libexecute.a libshellcommand.a
+	gcc -o akash akash.o $(LIBS) $(FLAGS) 
+
+libparser.a: parser.o parse.o tokenizer.o
+	ar rcs $@ $^
+
+libexecute.a: execute.o taskslist.o argslist.o io.o
+	ar rcs $@ $^
+
+libshellcommand.a: shellcommand.o
+	ar rcs $@ $^
+
+%.o: %.c
+	gcc -c -o $@ $^ $(FLAGS)
+
+run: akash
+	./akash
+
+debug: akash
+	gdb akash
+
+clean:
+	rm -f akash
+	rm -f *.a
+	rm -f *.o
+```
+
+I then moved each library's source code into each folder with it's own Makefile.
+In the main Makefile, I used the command `$(MAKE) [target] -C [subdir]` to call
+the Makefile within the directory.
+
+Here's the Makefile:
+
+
+```make
+LIBDIRS=-Lparser -Lexecute -Lshellcommand
+LIBS=-lparser -lexecute -lshellcommand
+FLAGS=-g $(patsubst %,-D%,$(DEBUG))
+
+akash: akash.o parser/libparser.a execute/libexecute.a shellcommand/libshellcommand.a
+	gcc -o akash akash.o $(LIBDIRS) $(LIBS) $(FLAGS) 
+
+parser/libparser.a:
+	$(MAKE) libparser.a -C parser
+
+execute/libexecute.a:
+	$(MAKE) libexecute.a -C execute
+
+shellcommand/libshellcommand.a:
+	$(MAKE) libshellcommand.a -C shellcommand
+
+run: akash
+	./akash
+
+debug: akash
+	gdb akash
+
+clean:
+	rm -f akash
+	rm -f *.o
+	$(MAKE) clean -C parser
+	$(MAKE) clean -C execute
+	$(MAKE) clean -C shellcommand 
+```
+
+And here's the directory structure
+
+	akash
+	  | akash.c
+	  | parser
+	  ----| parser.h
+		  | parser.c
+		  | parse.h
+		  | parse.c
+		  | tokenizer.h
+		  | tokenizer.c
+		  | Makefile
+	  | execute
+	  ----| execute.h
+		  | execute.c
+		  | taskslist.h
+		  | taskslist.c
+		  | argslist.h
+		  | argslist.c
+		  | io.h
+		  | io.c 
+		  | Makefile
+	  | shellcommand
+	  ----| shellcommand.h
+		  | shellcommand.c
+		  | Makefile
+	  | Makefile
+
+The Makefile in each library folder follows this format:
+
+```make
+FLAGS=-g $(patsubst %,-D%,$(DEBUG))
+
+libparser.a: parser.o parse.o tokenizer.o
+	ar rcs $@ $^
+
+%.o: %.c
+	gcc -c -o $@ $^
+
+clean:
+	rm -f *.a *.o
+```
+
+Of course `libparser.a` and it's sources will change for each target.
