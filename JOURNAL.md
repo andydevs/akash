@@ -354,8 +354,8 @@ I first want to see if I can use ld instead of gcc for linking files
 
 So I've done a few things since the last entry. This is gonna be a long entry
 
-The first thing, ld doesn't work... I'd have to use gcc for program. However,
-ar rcs works for libraries!
+The first thing, `ld` doesn't work... I had to use `gcc` for program. However,
+`ar rcs` works for libraries!
 
 So in the beginning my project folder looked like this
 
