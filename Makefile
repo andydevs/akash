@@ -1,4 +1,4 @@
-.PHONY: run debug clean
+.PHONY: run debug clean install
 .FORCE: 
 
 all: akash/akash beemoviescript/beemoviescript
@@ -30,3 +30,7 @@ clean:
 	$(MAKE) clean -C execute
 	$(MAKE) clean -C parser
 	$(MAKE) clean -C beemoviescript
+
+install: all
+	cp akash/akash /usr/bin
+	cp beemoviescript/beemoviescript /usr/bin
