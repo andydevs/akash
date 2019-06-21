@@ -29,3 +29,4 @@ clean:
 	$(MAKE) clean -C shellcommand
 	$(MAKE) clean -C execute
 	$(MAKE) clean -C parser
+	$(MAKE) clean -C beemoviescript

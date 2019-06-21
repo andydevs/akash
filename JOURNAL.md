@@ -352,7 +352,7 @@ I first want to see if I can use ld instead of gcc for linking files
 
 ---------------------------------------------------------------------------------
 
-So I've done a few things since the last entry.
+So I've done a few things since the last entry. This is gonna be a long entry
 
 The first thing, ld doesn't work... I'd have to use gcc for program. However,
 ar rcs works for libraries!
@@ -449,6 +449,8 @@ LIBDIRS=-Lparser -Lexecute -Lshellcommand
 LIBS=-lparser -lexecute -lshellcommand
 FLAGS=-g $(patsubst %,-D%,$(DEBUG))
 
+.PHONY: run debug clean
+
 akash: akash.o parser/libparser.a execute/libexecute.a shellcommand/libshellcommand.a
 	gcc -o akash akash.o $(LIBDIRS) $(LIBS) $(FLAGS) 
 
@@ -512,10 +514,258 @@ libparser.a: parser.o parse.o tokenizer.o
 	ar rcs $@ $^
 
 %.o: %.c
-	gcc -c -o $@ $^
+	gcc -c -o $@ $^ $(FLAGS)
 
 clean:
 	rm -f *.a *.o
 ```
 
 Of course `libparser.a` and it's sources will change for each target.
+
+I ran into a problem around this time. The libraries won't compile unless
+they don't exist. In short, I had to force the execution of the subdirectories
+in order to keep the libraries up to date. You do this by adding a bogus
+`.FORCE` target which will always run (since no target ever gets made)
+
+```make
+LIBDIRS=-Lparser -Lexecute -Lshellcommand
+LIBS=-lparser -lexecute -lshellcommand
+FLAGS=-g $(patsubst %,-D%,$(DEBUG))
+
+.PHONY: run debug clean
+.FORCE:
+
+akash: akash.o parser/libparser.a execute/libexecute.a shellcommand/libshellcommand.a
+	gcc -o akash akash.o $(LIBDIRS) $(LIBS) $(FLAGS) 
+
+parser/libparser.a: .FORCE
+	$(MAKE) libparser.a -C parser
+
+execute/libexecute.a: .FORCE
+	$(MAKE) libexecute.a -C execute
+
+shellcommand/libshellcommand.a: .FORCE
+	$(MAKE) libshellcommand.a -C shellcommand
+
+run: akash
+	./akash
+
+debug: akash
+	gdb akash
+
+clean:
+	rm -f akash
+	rm -f *.o
+	$(MAKE) clean -C parser
+	$(MAKE) clean -C execute
+	$(MAKE) clean -C shellcommand 
+```
+
+Then I realized that the main akash executable can be in it's own folder as well. This makes the main Makefile responsible only for orchestrating the subdir makes. Here's the new folder structure
+
+	akash
+	  | akash
+	  ----| akash.c
+		  | Makefile
+	  | parser
+	  ----| parser.h
+		  | parser.c
+		  | parse.h
+		  | parse.c
+		  | tokenizer.h
+		  | tokenizer.c
+		  | Makefile
+	  | execute
+	  ----| execute.h
+		  | execute.c
+		  | taskslist.h
+		  | taskslist.c
+		  | argslist.h
+		  | argslist.c
+		  | io.h
+		  | io.c 
+		  | Makefile
+	  | shellcommand
+	  ----| shellcommand.h
+		  | shellcommand.c
+		  | Makefile
+	  | Makefile
+
+And here's the Makefile
+
+```make
+.PHONY: run debug clean
+.FORCE:
+
+akash/akash: parser/libparser.a execute/libexecute.a shellcommand/libshellcommand.a
+	$(MAKE) akash -C akash	
+
+parser/libparser.a: .FORCE
+	$(MAKE) libparser.a -C parser
+
+execute/libexecute.a: .FORCE
+	$(MAKE) libexecute.a -C execute
+
+shellcommand/libshellcommand.a: .FORCE
+	$(MAKE) libshellcommand.a -C shellcommand
+
+run: akash/akash
+	./akash/akash
+
+debug: akash/akash
+	gdb akash/akash
+
+clean:
+	$(MAKE) clean -C akash
+	$(MAKE) clean -C parser
+	$(MAKE) clean -C execute
+	$(MAKE) clean -C shellcommand 
+```
+
+I could add the Makefile code for akash in the subdirectory of akash.
+
+```make
+LIBDIRS=-L../parser -L../execute -L../shellcommand
+LIBRARIES=-lreadline -lparser -lexecute -lshellcommand
+FLAGS=-g $(patsubst %,-D%,$(DEBUG))
+
+.PHONY: clean
+.FORCE:
+
+akash: akash.o .FORCE
+	gcc -o akash akash.o $(LIBDIRS) $(LIBRARIES) $(FLAGS)
+
+%.o: %.c
+	gcc -c -o $@ $^ $(FLAGS)
+
+clean:
+	rm -f akash akash.o
+```
+
+Finally, I've added a few header files. There's debug.h which handles debugging, and version.h which contains info about the program. As such I have to add the include path to the build (using flag `-I..`).
+
+```make
+LIBDIRS=-L../parser -L../execute -L../shellcommand
+LIBRARIES=-lreadline -lparser -lexecute -lshellcommand
+FLAGS=-I.. -g $(patsubst %,-D%,$(DEBUG))
+
+.PHONY: clean
+.FORCE:
+
+akash: akash.o .FORCE
+	gcc -o akash akash.o $(LIBDIRS) $(LIBRARIES) $(FLAGS)
+
+%.o: %.c
+	gcc -c -o $@ $^ $(FLAGS)
+
+clean:
+	rm -f akash akash.o
+```
+
+```make
+FLAGS=-I.. -g $(patsubst %,-D%,$(DEBUG))
+
+libparser.a: parser.o parse.o tokenizer.o
+	ar rcs $@ $^
+
+%.o: %.c
+	gcc -c -o $@ $^ $(FLAGS)
+
+clean:
+	rm -f *.a *.o
+```
+
+So this is what I've done for splitting up the code. 
+
+---------------------------------------------------------------------------------
+
+Oh, and I've also made the beemoviescript program. I decided that, since which is
+a gnu-standard program.
+
+	akash
+	  | akash
+	  ----| akash.c
+		  | Makefile
+	  | parser
+	  ----| parser.h
+		  | parser.c
+		  | parse.h
+		  | parse.c
+		  | tokenizer.h
+		  | tokenizer.c
+		  | Makefile
+	  | execute
+	  ----| execute.h
+		  | execute.c
+		  | taskslist.h
+		  | taskslist.c
+		  | argslist.h
+		  | argslist.c
+		  | io.h
+		  | io.c 
+		  | Makefile
+	  | shellcommand
+	  ----| shellcommand.h
+		  | shellcommand.c
+		  | Makefile
+	  | beemovescript
+	  ----| beemoviescript.c
+		  | Makefile
+	  | Makefile
+
+_Makefile in base_
+
+```make
+.PHONY: run debug clean
+.FORCE: 
+
+all: akash/akash beemoviescript/beemoviescript
+
+akash/akash: parser/libparser.a execute/libexecute.a shellcommand/libshellcommand.a .FORCE
+	$(MAKE) akash -C akash
+
+beemoviescript/beemoviescript: .FORCE
+	$(MAKE) beemoviescript -C beemoviescript
+
+shellcommand/libshellcommand.a: .FORCE
+	$(MAKE) libshellcommand.a -C shellcommand
+
+execute/libexecute.a: parser/libparser.a .FORCE
+	$(MAKE) libexecute.a -C execute
+
+parser/libparser.a: .FORCE
+	$(MAKE) libparser.a -C parser
+
+run: akash/akash
+	./akash/akash
+
+debug: akash/akash
+	gdb akash/akash
+
+clean:
+	$(MAKE) clean -C akash
+	$(MAKE) clean -C shellcommand
+	$(MAKE) clean -C execute
+	$(MAKE) clean -C parser
+	$(MAKE) clean -C beemoviescript
+```
+
+_Makefile in beemoviescript_
+
+```make
+FLAGS=-I.. -g $(patsubst %,-D%,$(DEBUG))
+
+.PHONY: clean run
+
+beemoviescript: beemoviescript.o
+	gcc -o $@ $^
+
+%.o: %.c
+	gcc -c -o $@ $^ $(FLAGS)
+
+run: beemoviescript
+	./beemoviescript
+
+clean:
+	rm -f beemoviescript *.o
+```
