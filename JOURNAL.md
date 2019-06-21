@@ -803,3 +803,8 @@ run: beemoviescript
 clean:
 	rm -f beemoviescript *.o
 ```
+
+---------------------------------------------------------------------------------
+
+And I'll call a version right here, since we gotta generally working prototype.
+Version 0.1.0

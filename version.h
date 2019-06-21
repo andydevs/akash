@@ -10,7 +10,7 @@
  */
 #define PROGRAM_NAME "akash"
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 0
+#define VERSION_MINOR 1
 #define VERSION_PATCH 0
 #define AUTHOR_NAME "Anshul Kharbanda"
 #define AUTHOR_EMAIL "akanshul97@gmail.com"
