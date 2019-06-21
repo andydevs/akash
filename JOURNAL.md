@@ -642,7 +642,39 @@ clean:
 	rm -f akash akash.o
 ```
 
-Finally, I've added a few header files. There's debug.h which handles debugging, and version.h which contains info about the program. As such I have to add the include path to the build (using flag `-I..`).
+Finally, I've added a few header files. There's debug.h which handles debugging, and version.h which contains info about the program. 
+
+	akash
+	  | debug.h
+	  | version.h
+	  | akash
+	  ----| akash.c
+		  | Makefile
+	  | parser
+	  ----| parser.h
+		  | parser.c
+		  | parse.h
+		  | parse.c
+		  | tokenizer.h
+		  | tokenizer.c
+		  | Makefile
+	  | execute
+	  ----| execute.h
+		  | execute.c
+		  | taskslist.h
+		  | taskslist.c
+		  | argslist.h
+		  | argslist.c
+		  | io.h
+		  | io.c 
+		  | Makefile
+	  | shellcommand
+	  ----| shellcommand.h
+		  | shellcommand.c
+		  | Makefile
+	  | Makefile
+
+As such I have to add the include path to the build (using flag `-I..`).
 
 ```make
 LIBDIRS=-L../parser -L../execute -L../shellcommand
@@ -683,6 +715,8 @@ Oh, and I've also made the beemoviescript program. I decided that, since which i
 a gnu-standard program.
 
 	akash
+	  | debug.h
+	  | version.h
 	  | akash
 	  ----| akash.c
 		  | Makefile
